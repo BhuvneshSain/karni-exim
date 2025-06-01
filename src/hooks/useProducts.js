@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
 const useProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
-      const snapshot = await getDocs(collection(db, 'products'));
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProducts(list);
-      setLoading(false);
+    const fetchProducts = async () => {
+      try {
+        const q = query(collection(db, 'products'), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setProducts(items);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetch();
+
+    fetchProducts();
   }, []);
 
   return { products, loading };
