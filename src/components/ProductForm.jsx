@@ -2,6 +2,7 @@ import { useState } from "react";
 import { db, storage } from '../firebase';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import useProducts from '../hooks/useProducts';
 
 const ProductForm = () => {
   const [name, setName] = useState("");
@@ -13,18 +14,18 @@ const ProductForm = () => {
   const [outOfStock, setOutOfStock] = useState(false);
   const [attributes, setAttributes] = useState("");
 
+  const { products, loading } = useProducts();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!mainImage) return alert("Main image required!");
 
     try {
-      // Upload Main Image
       const mainRef = ref(storage, `products/${Date.now()}_${mainImage.name}`);
       await uploadBytes(mainRef, mainImage);
       const mainImageUrl = await getDownloadURL(mainRef);
 
-      // Upload Other Images
       const otherImageUrls = [];
       for (let file of otherImages) {
         const fileRef = ref(storage, `products/${Date.now()}_${file.name}`);
@@ -33,7 +34,6 @@ const ProductForm = () => {
         otherImageUrls.push(url);
       }
 
-      // Prepare Data
       const productData = {
         name,
         category,
@@ -47,7 +47,6 @@ const ProductForm = () => {
         createdAt: Timestamp.now(),
       };
 
-      // Add to Firestore
       await addDoc(collection(db, "products"), productData);
 
       alert("Product added successfully!");
@@ -60,7 +59,7 @@ const ProductForm = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="max-w-4xl mx-auto px-4 py-12">
       <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">Add New Product</h2>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -144,6 +143,27 @@ const ProductForm = () => {
           Add Product
         </button>
       </form>
+
+      {/* Product List */}
+      <div className="mt-12">
+        <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>
+
+        {loading ? (
+          <p className="text-gray-600">Loading...</p>
+        ) : (
+          <ul className="space-y-4">
+            {products.map((p) => (
+              <li key={p.id} className="p-4 border rounded shadow-sm flex items-center gap-4">
+                <img src={p.mainImage} alt={p.name} className="w-16 h-16 object-cover rounded" />
+                <div className="flex-grow">
+                  <h4 className="font-semibold text-lg">{p.name}</h4>
+                  <p className="text-sm text-gray-500">{p.category}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
