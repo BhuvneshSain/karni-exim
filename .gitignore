@@ -6,9 +6,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+cors.json
 
 node_modules
-backend/serviceAccountKey.json
+
 dist
 dist-ssr
 *.local
