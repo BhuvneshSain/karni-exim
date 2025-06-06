@@ -1,8 +1,21 @@
 import { useState } from "react";
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { addDoc, collection, Timestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useProducts from '../hooks/useProducts';
+
+const uploadImageToServer = async (file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("https://karni-backend.onrender.com/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.url;
+};
 
 const ProductForm = () => {
   const [name, setName] = useState("");
@@ -18,21 +31,13 @@ const ProductForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!mainImage) return alert("Main image required!");
 
     try {
-      const mainRef = ref(storage, `products/${Date.now()}_${mainImage.name}`);
-      await uploadBytes(mainRef, mainImage);
-      const mainImageUrl = await getDownloadURL(mainRef);
-
-      const otherImageUrls = [];
-      for (let file of otherImages) {
-        const fileRef = ref(storage, `products/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        otherImageUrls.push(url);
-      }
+      const mainImageUrl = await uploadImageToServer(mainImage);
+      const otherImageUrls = await Promise.all(
+        otherImages.map(file => uploadImageToServer(file))
+      );
 
       const productData = {
         name,
@@ -144,10 +149,8 @@ const ProductForm = () => {
         </button>
       </form>
 
-      {/* Product List */}
       <div className="mt-12">
         <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>
-
         {loading ? (
           <p className="text-gray-600">Loading...</p>
         ) : (
