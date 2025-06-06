@@ -7,19 +7,22 @@ import useProducts from '../hooks/useProducts';
 const ProductForm = () => {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [description, setDescription] = useState("");
   const [mainImage, setMainImage] = useState(null);
   const [otherImages, setOtherImages] = useState([]);
   const [isBestSeller, setIsBestSeller] = useState(false);
-  const [outOfStock, setOutOfStock] = useState(false);
-  const [attributes, setAttributes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const { products, loading } = useProducts();
 
+  const categories = Array.from(new Set(products.map(p => p.category)));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!mainImage) return alert("Main image required!");
+
+    setSubmitting(true);
 
     try {
       const mainRef = ref(storage, `products/${Date.now()}_${mainImage.name}`);
@@ -36,25 +39,25 @@ const ProductForm = () => {
 
       const productData = {
         name,
-        category,
+        category: category === 'custom' ? customCategory : category,
         description,
         mainImage: mainImageUrl,
         otherImages: otherImageUrls,
         isBestSeller,
-        outOfStock,
         badges: [],
-        attributes: attributes.split(',').map((a) => a.trim()),
         createdAt: Timestamp.now(),
       };
 
       await addDoc(collection(db, "products"), productData);
 
       alert("Product added successfully!");
-      setName(""); setCategory(""); setDescription(""); setMainImage(null);
-      setOtherImages([]); setIsBestSeller(false); setOutOfStock(false); setAttributes("");
+      setName(""); setCategory(""); setCustomCategory(""); setDescription("");
+      setMainImage(null); setOtherImages([]); setIsBestSeller(false);
     } catch (err) {
       console.error("Upload error:", err);
       alert("Failed to upload product.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -72,15 +75,31 @@ const ProductForm = () => {
             className="border rounded px-4 py-2 w-full"
             required
           />
-          <input
-            type="text"
-            placeholder="Category"
+
+          <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="border rounded px-4 py-2 w-full"
             required
-          />
+          >
+            <option value="">-- Select Category --</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+            <option value="custom">Other (type below)</option>
+          </select>
         </div>
+
+        {category === 'custom' && (
+          <input
+            type="text"
+            placeholder="New Category"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            className="border rounded px-4 py-2 w-full"
+            required
+          />
+        )}
 
         <textarea
           placeholder="Description"
@@ -118,33 +137,17 @@ const ProductForm = () => {
             />
             Bestseller
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={outOfStock}
-              onChange={(e) => setOutOfStock(e.target.checked)}
-            />
-            Out of Stock
-          </label>
         </div>
-
-        <input
-          type="text"
-          placeholder="Attributes (comma separated)"
-          value={attributes}
-          onChange={(e) => setAttributes(e.target.value)}
-          className="border rounded px-4 py-2 w-full"
-        />
 
         <button
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow transition"
+          disabled={submitting}
         >
-          Add Product
+          {submitting ? 'Adding...' : 'Add Product'}
         </button>
       </form>
 
-      {/* Product List */}
       <div className="mt-12">
         <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>
 
