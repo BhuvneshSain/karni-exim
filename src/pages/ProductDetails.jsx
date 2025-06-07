@@ -41,7 +41,7 @@ I'm interested in the following product:
 
 🛍️ *Product:* ${product.name}
 📂 *Category:* ${product.category}
-🔗 *Product Link:* https://karni-exim-new.netlify.app/product/${product.id}
+🔗 *Product Link:* https://karni-exim-new.netlify.app/products/${product.id}
 
 Please provide a quote or more details.
 
