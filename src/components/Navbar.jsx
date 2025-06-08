@@ -31,14 +31,14 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-md">
-      <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-extrabold text-blue-900 tracking-wide">
+    <nav className="sticky top-0 z-50 bg-white shadow-md w-full">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-extrabold text-blue-900 tracking-wide">
           <NavLink to="/" onClick={closeMenu}>Karni Exim</NavLink>
         </h1>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex space-x-6">
+        <div className="hidden lg:flex space-x-8">
           <NavLink to="/" className={linkClass}>Home</NavLink>
           <NavLink to="/products" className={linkClass}>Products</NavLink>
           <NavLink to="/about" className={linkClass}>About</NavLink>

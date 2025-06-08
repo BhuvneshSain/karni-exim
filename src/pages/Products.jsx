@@ -13,18 +13,22 @@ const Products = () => {
     ? products
     : products.filter(p => p.category === selectedCategory);
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (loading) return (
+    <div className="flex justify-center items-center py-16">
+      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h2 className="text-3xl font-bold text-blue-800 mb-6">Our Products</h2>
+    <div className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
+      <h2 className="text-3xl md:text-4xl font-bold text-blue-800 mb-6 md:mb-8">Our Products</h2>
       
-      <div className="mb-6 flex gap-2 flex-wrap">
+      <div className="mb-6 md:mb-8 flex gap-2 md:gap-3 flex-wrap">
         {categories.map(cat => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded ${
+            className={`px-4 py-2 rounded-lg text-base md:text-lg transition-colors ${
               selectedCategory === cat
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 hover:bg-gray-300'
@@ -35,7 +39,7 @@ const Products = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
         {filteredProducts.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}
