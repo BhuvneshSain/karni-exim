@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
 
@@ -11,9 +11,24 @@ const linkClass = ({ isActive }) =>
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
+
+  const scrollToSection = (sectionId) => {
+    if (!isHome) {
+      // If not on home page, navigate to home first
+      window.location.href = '/#' + sectionId;
+      return;
+    }
+    
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-md">

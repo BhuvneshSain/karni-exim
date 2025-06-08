@@ -23,7 +23,7 @@ const ProductDetails = () => {
 
   if (!product) return <div className="text-center py-12 text-gray-600">Loading...</div>;
 
-  const images = [product.mainImage, ...(product.otherImages || [])];
+  const images = [product.mainImage, ...(product.otherImages || [])].filter(Boolean);
 
   const settings = {
     dots: true,
@@ -32,6 +32,16 @@ const ProductDetails = () => {
     slidesToShow: 1,
     slidesToScroll: 1,
     arrows: true,
+    adaptiveHeight: true,
+    responsive: [
+      {
+        breakpoint: 640,
+        settings: {
+          arrows: false,
+          dots: true
+        }
+      }
+    ]
   };
 
  const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
@@ -51,35 +61,40 @@ Thanks & Regards,
 
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
-      <Link to="/products" className="text-blue-600 hover:underline">&larr; Back to Products</Link>
+    <div className="max-w-4xl mx-auto px-4 py-6 sm:py-10">
+      <Link to="/products" className="text-blue-600 hover:underline mb-4 inline-block">
+        &larr; Back to Products
+      </Link>
 
-      <div className="grid md:grid-cols-2 gap-8 mt-6">
-        <div>
-          <Slider {...settings}>
-            {images.map((img, idx) => (
-              <div key={idx}>
-                <img
-                  src={img}
-                  alt={`More ${idx}`}
-                  className="w-full object-contain max-h-80 sm:max-h-96 md:max-h-[28rem] rounded shadow"
-                />
-              </div>
-            ))}
-          </Slider>
+      <div className="flex flex-col md:grid md:grid-cols-2 gap-6 mt-4">
+        <div className="w-full">
+          <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden">
+            <Slider {...settings}>
+              {images.map((img, idx) => (
+                <div key={idx} className="relative pb-[100%]">
+                  <img
+                    src={img}
+                    alt={`${product.name} - Image ${idx + 1}`}
+                    className="absolute inset-0 w-full h-full object-contain p-4"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </Slider>
+          </div>
         </div>
 
-        <div>
-          <h1 className="text-3xl font-bold text-blue-900">{product.name}</h1>
-          <p className="text-gray-600 mt-2">{product.description}</p>
-          <p className="mt-4 text-sm text-gray-500">Category: {product.category}</p>
+        <div className="flex flex-col space-y-4 px-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">{product.name}</h1>
+          <p className="text-gray-600 text-sm sm:text-base">{product.description}</p>
+          <p className="text-sm text-gray-500">Category: {product.category}</p>
 
           {product.badges?.length > 0 && (
-            <div className="mt-4 space-x-2">
+            <div className="flex flex-wrap gap-2">
               {product.badges.map((badge, idx) => (
                 <span
                   key={idx}
-                  className="bg-yellow-300 text-sm text-gray-800 font-medium px-2 py-1 rounded"
+                  className="bg-yellow-300 text-xs sm:text-sm text-gray-800 font-medium px-2 py-1 rounded"
                 >
                   {badge}
                 </span>
@@ -88,14 +103,14 @@ Thanks & Regards,
           )}
 
           {product.outOfStock && (
-            <p className="text-red-600 font-bold uppercase mt-4">Out of Stock</p>
+            <p className="text-red-600 font-bold text-sm uppercase">Out of Stock</p>
           )}
 
           <a
             href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded shadow transition"
+            className="w-full sm:w-auto text-center mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-3 rounded shadow transition"
           >
             📩 Get Quote on WhatsApp
           </a>
