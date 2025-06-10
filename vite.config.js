@@ -1,20 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      'firebase/app': path.resolve(__dirname, 'node_modules/firebase/app/dist/index.mjs'),
+      'firebase/auth': path.resolve(__dirname, 'node_modules/firebase/auth/dist/index.mjs'),
+      'firebase/firestore': path.resolve(__dirname, 'node_modules/firebase/firestore/dist/index.mjs'),
+      'firebase/storage': path.resolve(__dirname, 'node_modules/firebase/storage/dist/index.mjs'),
+    }
+  },
   build: {
     // Optimize chunks for better loading
     rollupOptions: {
       output: {
         manualChunks: {
           // Vendor chunk for libraries
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          // UI libraries chunk
+          vendor: ['react', 'react-dom', 'react-router-dom'],          // UI libraries chunk
           ui: ['flowbite', 'framer-motion', 'react-icons', 'react-slick', 'slick-carousel', 'swiper'],
-          // Firebase separate chunk
-          firebase: ['firebase'],
+          // Firebase separate chunk - specify individual modules
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
         },
       },
     },
