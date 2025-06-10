@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';

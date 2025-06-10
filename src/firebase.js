@@ -1,7 +1,8 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// Use the lite version for better compatibility with Vite
+import { getFirestore } from "firebase/firestore/lite";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {

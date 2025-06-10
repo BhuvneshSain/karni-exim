@@ -7,7 +7,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import './HeroSection.css'; // Import custom styles
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 import { getOptimizedImageUrl, getImagePlaceholder } from '../utils/imageOptimizer';
 

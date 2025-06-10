@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, writeBatch, query, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, writeBatch, query, orderBy, limit } from 'firebase/firestore/lite';
 import { motion } from 'framer-motion';
 import { FaStar, FaTrash, FaCheck, FaTimes, FaEdit, FaTrashAlt } from 'react-icons/fa';
 

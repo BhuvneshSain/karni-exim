@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+// Import Firebase components individually to avoid resolution issues
+import { collection } from 'firebase/firestore/lite';
+import { query } from 'firebase/firestore/lite';
+import { where } from 'firebase/firestore/lite';
+import { getDocs } from 'firebase/firestore/lite';
+import { doc } from 'firebase/firestore/lite';
+import { updateDoc } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 
 /**
