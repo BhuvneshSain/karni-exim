@@ -1,7 +1,14 @@
 /* Custom styles for the hero section slider */
+/* Rounded corners for hero section */
+.rounded-hero {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
 .thumbs-swiper {
   padding: 4px;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(52, 76, 93, 0.2);
   border-radius: 8px;
 }
 
@@ -17,7 +24,7 @@
 
 .thumbs-swiper .swiper-slide-thumb-active {
   opacity: 1;
-  border: 2px solid white;
+  border: 2px solid var(--color-saffron);
 }
 
 /* Add gradient overlay for better pagination visibility */
@@ -28,9 +35,11 @@
   left: 0;
   width: 100%;
   height: 80px; /* Height of the gradient */
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  background: linear-gradient(to top, rgba(52, 76, 93, 0.4), transparent);
   pointer-events: none; /* Allow clicks to pass through */
   z-index: 5; /* Above images but below controls */
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .hero-swiper .swiper-pagination {
@@ -40,19 +49,19 @@
 .hero-swiper .swiper-pagination-bullet {
   width: 12px;
   height: 12px;
-  background-color: white;
+  background-color: var(--color-beige);
   opacity: 0.7;
 }
 
 .hero-swiper .swiper-pagination-bullet-active {
   opacity: 1;
-  background-color: #3b82f6;
+  background-color: var(--color-saffron);
 }
 
 .hero-swiper .swiper-button-next,
 .hero-swiper .swiper-button-prev {
-  color: white;
-  background-color: rgba(0, 0, 0, 0.3);
+  color: var(--color-saffron);
+  background-color: rgba(52, 76, 93, 0.6);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -83,7 +92,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f3f4f6;
+  background-color: var(--color-charcoal-light);
   z-index: 1;
 }
 
@@ -92,8 +101,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 3px solid #e5e7eb;
-  border-top-color: #3b82f6;
+  border: 3px solid rgba(235, 185, 36, 0.3);
+  border-top-color: var(--color-saffron);
   animation: spin 1s infinite linear;
 }
 
@@ -123,11 +132,32 @@
 .clean-hero .swiper-pagination-bullet {
   width: 10px;
   height: 10px;
-  background-color: white;
+  background-color: var(--color-beige);
   opacity: 0.7;
 }
 
 .clean-hero .swiper-pagination-bullet-active {
   opacity: 1;
-  background-color: white;
+  background-color: var(--color-saffron);
+}
+
+/* Rounded corners for hero images and slides */
+.karni-hero .swiper-slide {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Media queries for responsive rounded corners */
+@media (max-width: 768px) {
+  .rounded-hero,
+  .karni-hero .swiper-slide {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rounded-hero,
+  .karni-hero .swiper-slide {
+    border-radius: 8px;
+  }
 }

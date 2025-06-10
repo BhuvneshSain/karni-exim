@@ -316,12 +316,11 @@ const ReviewManagement = () => {
       )}
       
       {/* Reviews List */}
-      <div>
-        {loading ? (
+      <div>        {loading ? (
           <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
           </div>
-        ) : reviews.length > 0 ? (
+        ) :reviews.length > 0 ? (
           <div className="space-y-4">
             {reviews.map((review) => (              <motion.div
                 key={review.id}

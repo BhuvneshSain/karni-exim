@@ -1,0 +1,53 @@
+/* Karni Exim Theme - Based on Brand Color Palette */
+:root {
+  /* Primary Colors */
+  --color-saffron: #EBB924;
+  --color-charcoal-dark: #344C5D;
+  --color-charcoal-light: #3A5161;
+  --color-beige: #FEFBE3;
+  --color-cornsilk: #FFFCE4;
+  --color-gray: #798789;
+  
+  /* Functional Colors */
+  --color-primary: var(--color-charcoal-dark);
+  --color-secondary: var(--color-saffron);
+  --color-accent: var(--color-saffron);
+  --color-background: var(--color-beige);
+  --color-background-alt: var(--color-cornsilk);
+  --color-text: var(--color-charcoal-dark);
+  --color-text-light: var(--color-gray);
+  --color-border: var(--color-gray);
+  
+  /* Component Colors */
+  --color-nav-bg: var(--color-charcoal-dark);
+  --color-nav-text: white;
+  --color-footer-bg: var(--color-charcoal-dark);
+  --color-footer-text: white;
+  --color-button-primary-bg: var(--color-charcoal-dark);
+  --color-button-primary-text: white;
+  --color-button-secondary-bg: var(--color-saffron);
+  --color-button-secondary-text: var(--color-charcoal-dark);
+  --color-card-bg: white;
+  --color-card-shadow: rgba(0, 0, 0, 0.1);
+  
+  /* Animation Durations */
+  --transition-fast: 0.2s;
+  --transition-medium: 0.3s;
+  --transition-slow: 0.5s;
+}
+
+/* Utility Classes */
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-background { background-color: var(--color-background); }
+.bg-background-alt { background-color: var(--color-background-alt); }
+
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-accent { color: var(--color-accent); }
+.text-light { color: var(--color-text-light); }
+
+.border-primary { border-color: var(--color-primary); }
+.border-secondary { border-color: var(--color-secondary); }
+.border-accent { border-color: var(--color-accent); }

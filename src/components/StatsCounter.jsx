@@ -81,36 +81,37 @@ const StatsCounter = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="py-16 bg-gray-50 w-full"
+      className="py-16 bg-beige w-full"
     >
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-blue-800 text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-12">
           Why choose Karni Exim?
         </h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">          {/* Product Count */}
-          <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          {/* Product Count */}
+          <div className="p-8 bg-cornsilk rounded-lg shadow-md hover:shadow-lg transition-shadow border border-saffron/20">
+            <div className="text-saffron text-5xl md:text-6xl font-bold mb-4">
               <CounterAnimation end={stats.products} suffix="+" />
             </div>
-            <div className="uppercase tracking-wider font-semibold text-gray-800">
+            <div className="uppercase tracking-wider font-semibold text-charcoal">
               STAINLESS STEEL PRODUCTS
             </div>
           </div>
           
           {/* Years of Expertise */}
-          <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
+          <div className="p-8 bg-cornsilk rounded-lg shadow-md hover:shadow-lg transition-shadow border border-saffron/20">
+            <div className="text-saffron text-5xl md:text-6xl font-bold mb-4">
               <CounterAnimation end={stats.years} suffix="+" />
             </div>
-            <div className="uppercase tracking-wider font-semibold text-gray-800">
+            <div className="uppercase tracking-wider font-semibold text-charcoal">
               YEARS OF EXPERTISE
             </div>
           </div>
           
           {/* Happy Clients */}
-          <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
+          <div className="p-8 bg-cornsilk rounded-lg shadow-md hover:shadow-lg transition-shadow border border-saffron/20">
+            <div className="text-saffron text-5xl md:text-6xl font-bold mb-4">
               <CounterAnimation 
                 end={stats.clients} 
                 suffix="+" 
@@ -118,17 +119,17 @@ const StatsCounter = () => {
                 formatter={formatNumber} 
               />
             </div>
-            <div className="uppercase tracking-wider font-semibold text-gray-800">
+            <div className="uppercase tracking-wider font-semibold text-charcoal">
               HAPPY CLIENTS
             </div>
           </div>
           
           {/* Satisfaction Rate */}
-          <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
+          <div className="p-8 bg-cornsilk rounded-lg shadow-md hover:shadow-lg transition-shadow border border-saffron/20">
+            <div className="text-saffron text-5xl md:text-6xl font-bold mb-4">
               <CounterAnimation end={stats.satisfaction} suffix="%" />
             </div>
-            <div className="uppercase tracking-wider font-semibold text-gray-800">
+            <div className="uppercase tracking-wider font-semibold text-charcoal">
               SATISFACTION RATE
             </div>
           </div>

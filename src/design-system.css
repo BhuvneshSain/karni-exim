@@ -1,0 +1,200 @@
+/* 
+   Karni Exim Design System
+   Created: June 10, 2025
+   
+   This file documents the design tokens and components used throughout the site.
+   Use this as a reference when developing new features to maintain design consistency.
+*/
+
+/*
+ * COLOR SYSTEM
+ * 
+ * Primary Colors
+ * - Saffron (#EBB924): Primary accent color, used for CTAs, highlights, and brand elements
+ * - Charcoal Dark (#344C5D): Primary dark color, used for text, navigation, and footer
+ * - Charcoal Light (#3A5161): Secondary dark color, used for hover states and backgrounds
+ * 
+ * Secondary Colors
+ * - Beige (#FEFBE3): Primary light background color
+ * - Cornsilk (#FFFCE4): Secondary light background color
+ * - Battleship Gray (#798789): Neutral text color
+ */
+
+/*
+ * TYPOGRAPHY SYSTEM
+ *
+ * Font Families:
+ * - Headings: Inter (700, 600)
+ * - Body: Inter (400)
+ * 
+ * Font Sizes:
+ * - Display: 3rem (48px)
+ * - H1: 2.5rem (40px)
+ * - H2: 2rem (32px)
+ * - H3: 1.5rem (24px)
+ * - Body Large: 1.125rem (18px)
+ * - Body: 1rem (16px)
+ * - Small: 0.875rem (14px)
+ * - XSmall: 0.75rem (12px)
+ */
+
+/*
+ * SPACING SYSTEM
+ *
+ * The spacing system is based on increments of 4px:
+ * - 0.25rem (4px)
+ * - 0.5rem (8px)
+ * - 0.75rem (12px)
+ * - 1rem (16px)
+ * - 1.5rem (24px)
+ * - 2rem (32px)
+ * - 3rem (48px)
+ * - 4rem (64px)
+ * - 6rem (96px)
+ * - 8rem (128px)
+ */
+
+/*
+ * COMPONENT EXAMPLES
+ */
+
+/* Buttons */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-charcoal-dark);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-charcoal-light);
+}
+
+.btn-secondary {
+  background-color: var(--color-saffron);
+  color: var(--color-charcoal-dark);
+}
+
+.btn-secondary:hover {
+  filter: brightness(1.05);
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.25rem solid var(--color-saffron);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spinner 0.8s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Input Fields */
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-gray);
+  border-radius: 0.25rem;
+  background-color: white;
+  transition: border 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--color-saffron);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(235, 185, 36, 0.2);
+}
+
+/* Section Containers */
+.section {
+  padding: 4rem 1rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--color-charcoal-dark);
+}
+
+.section-light {
+  background-color: var(--color-beige);
+}
+
+.section-dark {
+  background-color: var(--color-charcoal-dark);
+  color: white;
+}
+
+.section-accent {
+  background-color: var(--color-saffron);
+  color: var(--color-charcoal-dark);
+}
+
+/* 
+ * OVERRIDE LEGACY CLASSES - Added during redesign to ensure consistency
+ * These override legacy Tailwind classes that are still in the codebase
+ */
+.text-blue-50 {
+  background-color: var(--color-beige) !important;
+}
+
+.hover\:bg-blue-100:hover {
+  background-color: var(--color-saffron) !important;
+  opacity: 0.2;
+}
+
+.text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900 {
+  color: var(--color-charcoal-dark) !important;
+}
+
+.text-gray-700 {
+  color: var(--color-gray) !important;
+}
+
+.bg-blue-50, .bg-blue-100 {
+  background-color: var(--color-cornsilk) !important;
+}
+
+.bg-blue-600, .bg-blue-700 {
+  background-color: var(--color-charcoal) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: var(--color-charcoal-light) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--color-saffron) !important;
+  opacity: 0.2;
+}
+
+.text-blue-500 {
+  color: var(--color-saffron) !important;
+}

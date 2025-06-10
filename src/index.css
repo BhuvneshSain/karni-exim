@@ -1,16 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&display=swap');
+@import './theme.css';
+@import './design-system.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
-  color: #1f2937;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif;
+  }
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-charcoal text-white px-6 py-2 rounded-md hover:bg-charcoal-dark transition duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-saffron text-charcoal px-6 py-2 rounded-md hover:bg-opacity-80 transition duration-300;
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-charcoal text-center mb-8;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden transition duration-300 hover:shadow-lg;
+  }
+}
+
 .slick-prev:before,
 .slick-next:before {
-  color: #1d4ed8; /* blue-700 */
+  color: var(--color-primary);
   font-size: 28px;
 }

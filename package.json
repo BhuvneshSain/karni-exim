@@ -11,7 +11,8 @@
     "fix-reviews": "node admin/update-reviews-flags.mjs",
     "diagnose-reviews": "node admin/fix-review-timestamps.mjs",
     "verify-reviews": "node admin/verify-reviews.js",
-    "cleanup": "node cleanup.js"
+    "cleanup": "node cleanup.js",
+    "deploy": "npm run lint && npm run build && npm run preview"
   },
   "dependencies": {
     "animate.css": "^4.1.1",

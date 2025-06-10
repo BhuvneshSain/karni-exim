@@ -514,13 +514,11 @@ const ProductForm = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>
-
-        {loading ? (
+        <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>        {loading ? (
           <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
           </div>
-        ) : (
+        ) :(
           <div className="space-y-4">
             {products.map((p) => (              <div key={p.id} className="p-4 border rounded shadow-sm bg-white flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="w-20 h-20 flex-shrink-0">

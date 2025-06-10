@@ -171,6 +171,7 @@ The Review Management section allows you to handle customer testimonials and rev
 3. **Make Necessary Changes**
    - Update the customer name, company, review text, or rating
    - You can also change the approval status
+   - Note: Review dates are not displayed on the website
 
 4. **Save Changes**
    - Click "Update Review" to save your changes

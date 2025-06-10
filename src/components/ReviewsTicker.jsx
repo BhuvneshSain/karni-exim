@@ -7,27 +7,21 @@ import { checkFirebaseConfig } from '../debug/env-check';
 import './ReviewsTicker.css';
 
 const ReviewCard = ({ review, index }) => {
-  // Format the date if available
-  const formattedDate = review.createdAt 
-    ? new Date(review.createdAt.seconds * 1000).toLocaleDateString() 
-    : '';
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="review-card flex-shrink-0 w-full md:w-[350px] bg-white rounded-xl shadow-lg p-6 mx-3 my-4"
+      className="review-card flex-shrink-0 w-full md:w-[350px] bg-cornsilk rounded-xl shadow-lg p-6 mx-3 my-4"
     >
       <div className="flex items-center mb-4">
-        <div className="review-avatar w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-800 font-bold text-lg mr-3">
+        <div className="review-avatar w-12 h-12 bg-saffron/20 rounded-full flex items-center justify-center text-charcoal font-bold text-lg mr-3">
           {review.name.substring(0, 1)}
         </div>
         <div>
-          <h3 className="font-bold text-blue-900">{review.name}</h3>
-          <p className="text-sm text-gray-600">{review.company}, {review.location}</p>
-          {formattedDate && <p className="text-xs text-gray-400">{formattedDate}</p>}
+          <h3 className="font-bold text-charcoal">{review.name}</h3>
+          <p className="text-sm text-gray">{review.company}, {review.location}</p>
         </div>
       </div>
       
@@ -43,19 +37,20 @@ const ReviewCard = ({ review, index }) => {
       </div>
       
       <div className="relative">
-        <FaQuoteLeft className="quote-icon quote-left absolute top-0 left-0 text-blue-200 opacity-50" size={20} />
-        <p className="text-gray-700 px-6 py-2">{review.text}</p>
-        <FaQuoteRight className="quote-icon quote-right absolute bottom-0 right-0 text-blue-200 opacity-50" size={20} />
+        <FaQuoteLeft className="quote-icon quote-left absolute top-0 left-0 text-saffron opacity-50" size={20} />
+        <p className="text-charcoal px-6 py-2">{review.text}</p>
+        <FaQuoteRight className="quote-icon quote-right absolute bottom-0 right-0 text-saffron opacity-50" size={20} />
       </div>
     </motion.div>
   );
 };
 
 const ReviewsTicker = () => {
-  const tickerRef = useRef(null);  const [isHovered, setIsHovered] = useState(false);
+  const tickerRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
   const [tickerWidth, setTickerWidth] = useState(0);
   const [reviewsData, setReviewsData] = useState([]);
-  const [loading, setLoading] = useState(true);  // Error state for debugging
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [diagnosisMode, setDiagnosisMode] = useState(false);
   const [diagnosis, setDiagnosis] = useState({
@@ -105,126 +100,128 @@ const ReviewsTicker = () => {
         setLoading(false);
         return;
       }
-          // Check if we have reviews with the necessary fields
-        let hasProperReviews = false;
-        let reviewsWithApproved = 0;
-        let reviewsWithIsAdmin = 0;
-        let reviewsWithBothFlags = 0;
-        let reviewsWithCreatedAt = 0;
-        let reviewsEligibleForDisplay = 0;
+      
+      // Check if we have reviews with the necessary fields
+      let hasProperReviews = false;
+      let reviewsWithApproved = 0;
+      let reviewsWithIsAdmin = 0;
+      let reviewsWithBothFlags = 0;
+      let reviewsWithCreatedAt = 0;
+      let reviewsEligibleForDisplay = 0;
+      
+      allReviewsSnapshot.forEach(doc => {
+        const data = doc.data();
         
-        allReviewsSnapshot.forEach(doc => {
-          const data = doc.data();
-          
-          if (data.approved === true) reviewsWithApproved++;
-          if (data.isAdmin === true) reviewsWithIsAdmin++;
-          if (data.approved === true && data.isAdmin === true) reviewsWithBothFlags++;
-          if (data.createdAt) reviewsWithCreatedAt++;
-          
-          if (data.approved === true && data.isAdmin === true && data.createdAt) {
-            hasProperReviews = true;
-            reviewsEligibleForDisplay++;
-          }
-        });
+        if (data.approved === true) reviewsWithApproved++;
+        if (data.isAdmin === true) reviewsWithIsAdmin++;
+        if (data.approved === true && data.isAdmin === true) reviewsWithBothFlags++;
+        if (data.createdAt) reviewsWithCreatedAt++;
         
-        // Update diagnosis state
-        setDiagnosis({
-          totalReviews: allReviewsSnapshot.size,
-          reviewsWithApproved,
-          reviewsWithIsAdmin,
-          reviewsWithBothFlags,
-          reviewsWithCreatedAt,
-          reviewsEligibleForDisplay,
-          configStatus: 'complete'
-        });
-        
-        if (!hasProperReviews) {
-          console.log("ReviewsTicker: No reviews meet filter criteria (approved=true AND isAdmin=true AND createdAt exists)");
-          
-          if (reviewsWithBothFlags === 0) {
-            setError("No reviews have both required flags (isAdmin=true AND approved=true)");
-          } else if (reviewsWithCreatedAt === 0) {
-            setError("Reviews exist but don't have valid createdAt timestamps");
-          }
+        if (data.approved === true && data.isAdmin === true && data.createdAt) {
+          hasProperReviews = true;
+          reviewsEligibleForDisplay++;
         }
+      });
+      
+      // Update diagnosis state
+      setDiagnosis({
+        totalReviews: allReviewsSnapshot.size,
+        reviewsWithApproved,
+        reviewsWithIsAdmin,
+        reviewsWithBothFlags,
+        reviewsWithCreatedAt,
+        reviewsEligibleForDisplay,
+        configStatus: 'complete'
+      });
+      
+      if (!hasProperReviews) {
+        console.log("ReviewsTicker: No reviews meet filter criteria (approved=true AND isAdmin=true AND createdAt exists)");
         
-        // Now try with the specific query
+        if (reviewsWithBothFlags === 0) {
+          setError("No reviews have both required flags (isAdmin=true AND approved=true)");
+        } else if (reviewsWithCreatedAt === 0) {
+          setError("Reviews exist but don't have valid createdAt timestamps");
+        }
+      }
+      
+      // Now try with the specific query
+      try {
+        // Create the query to get approved reviews added by admin
+        const reviewsQuery = query(
+          collection(db, "reviews"), 
+          where("approved", "==", true),
+          where("isAdmin", "==", true)
+        );
+        
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        console.log(`ReviewsTicker: Found ${reviewsSnapshot.size} reviews that match isAdmin=true AND approved=true`);
+        
+        if (!reviewsSnapshot.empty) {
+          // Now sort them manually since we can't use orderBy if there might be missing createdAt fields
+          const reviewsList = reviewsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }))
+          .filter(review => review.createdAt) // Ensure reviews have createdAt
+          .sort((a, b) => {
+            // Sort by createdAt in descending order (newest first)
+            return b.createdAt.seconds - a.createdAt.seconds;
+          });
+          
+          console.log(`ReviewsTicker: ${reviewsList.length} reviews have valid createdAt field`);
+          
+          if (reviewsList.length > 0) {
+            setReviewsData(reviewsList);
+          } else {
+            console.log("ReviewsTicker: No reviews with valid createdAt field");
+            setReviewsData([]);
+          }
+        } else {
+          setReviewsData([]);
+        }
+      } catch (queryError) {
+        console.error("ReviewsTicker: Error with composite query:", queryError);
+        
+        // Fallback to simpler queries
         try {
-          // Create the query to get approved reviews added by admin
-          const reviewsQuery = query(
+          console.log("ReviewsTicker: Trying fallback queries...");
+          
+          // Just get reviews with isAdmin=true first
+          const adminReviewsQuery = query(
             collection(db, "reviews"), 
-            where("approved", "==", true),
             where("isAdmin", "==", true)
           );
           
-          const reviewsSnapshot = await getDocs(reviewsQuery);
-          console.log(`ReviewsTicker: Found ${reviewsSnapshot.size} reviews that match isAdmin=true AND approved=true`);
+          const adminReviewsSnapshot = await getDocs(adminReviewsQuery);
+          console.log(`ReviewsTicker: Found ${adminReviewsSnapshot.size} reviews with isAdmin=true`);
           
-          if (!reviewsSnapshot.empty) {
-            // Now sort them manually since we can't use orderBy if there might be missing createdAt fields
-            const reviewsList = reviewsSnapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }))
-            .filter(review => review.createdAt) // Ensure reviews have createdAt
-            .sort((a, b) => {
-              // Sort by createdAt in descending order (newest first)
-              return b.createdAt.seconds - a.createdAt.seconds;
-            });
+          if (!adminReviewsSnapshot.empty) {
+            const reviewsList = adminReviewsSnapshot.docs
+              .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }))
+              .filter(review => review.approved === true); // Filter for approved
             
-            console.log(`ReviewsTicker: ${reviewsList.length} reviews have valid createdAt field`);
-            
-            if (reviewsList.length > 0) {
-              setReviewsData(reviewsList);
-            } else {
-              console.log("ReviewsTicker: No reviews with valid createdAt field");
-              setReviewsData([]);
-            }
+            setReviewsData(reviewsList);
+            console.log(`ReviewsTicker: ${reviewsList.length} reviews match both criteria after filtering`);
           } else {
             setReviewsData([]);
           }
-        } catch (queryError) {
-          console.error("ReviewsTicker: Error with composite query:", queryError);
-          
-          // Fallback to simpler queries
-          try {
-            console.log("ReviewsTicker: Trying fallback queries...");
-            
-            // Just get reviews with isAdmin=true first
-            const adminReviewsQuery = query(
-              collection(db, "reviews"), 
-              where("isAdmin", "==", true)
-            );
-            
-            const adminReviewsSnapshot = await getDocs(adminReviewsQuery);
-            console.log(`ReviewsTicker: Found ${adminReviewsSnapshot.size} reviews with isAdmin=true`);
-            
-            if (!adminReviewsSnapshot.empty) {
-              const reviewsList = adminReviewsSnapshot.docs
-                .map(doc => ({
-                  id: doc.id,
-                  ...doc.data()
-                }))
-                .filter(review => review.approved === true); // Filter for approved
-              
-              setReviewsData(reviewsList);
-              console.log(`ReviewsTicker: ${reviewsList.length} reviews match both criteria after filtering`);
-            } else {
-              setReviewsData([]);
-            }
-          } catch (fallbackError) {
-            console.error("ReviewsTicker: Even fallback queries failed:", fallbackError);
-            setReviewsData([]);
-            setError(fallbackError.message);
-          }
+        } catch (fallbackError) {
+          console.error("ReviewsTicker: Even fallback queries failed:", fallbackError);
+          setReviewsData([]);
+          setError(fallbackError.message);
         }
-      } catch (error) {
-        console.error("ReviewsTicker: Error fetching reviews:", error);
-        setError(error.message);
-        setReviewsData([]);      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("ReviewsTicker: Error fetching reviews:", error);
+      setError(error.message);
+      setReviewsData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
     
   // Initial fetch when component mounts
   useEffect(() => {
@@ -240,30 +237,33 @@ const ReviewsTicker = () => {
       const width = tickerRef.current.scrollWidth / 2;
       setTickerWidth(-width);
     }
-  }, [reviewsData]);  // Don't render the section if there are no reviews to show and we're not loading
+  }, [reviewsData]);
+
+  // Don't render the section if there are no reviews to show and we're not loading
   if (!loading && reviewsData.length === 0 && !error) {
     return null;
   }
   
   return (
-    <section className="py-16 bg-gray-50 w-full overflow-hidden">
+    <section className="py-16 bg-beige w-full overflow-hidden">
       <div className="max-w-7xl mx-auto px-4">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-3xl md:text-4xl font-bold text-blue-800 text-center mb-8 md:mb-12"
+          className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-8 md:mb-12"
         >
           What Our Clients Say
         </motion.h2>
         
         {loading && (
           <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
-          {error && import.meta.env.DEV && (
+        
+        {error && import.meta.env.DEV && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 mx-auto max-w-2xl">
             <div className="flex items-start">
               <div className="flex-shrink-0">
@@ -276,7 +276,7 @@ const ReviewsTicker = () => {
                   <p className="text-xs text-gray-500">This message is only visible in development mode</p>
                   <button 
                     onClick={retryFetch}
-                    className="ml-3 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="ml-3 inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-charcoal hover:bg-charcoal-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-saffron"
                   >
                     <FaSync className="mr-1" /> Retry
                   </button>
@@ -339,7 +339,8 @@ const ReviewsTicker = () => {
               <div className="ticker-fadeout-left"></div>
               <div className="ticker-fadeout-right"></div>
             </div>
-              {/* Mobile & Tablet View - Grid Layout */}
+            
+            {/* Mobile & Tablet View - Grid Layout */}
             <div className="md:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
               {reviewsData.map((review, index) => (
                 <ReviewCard key={review.id} review={review} index={index} />

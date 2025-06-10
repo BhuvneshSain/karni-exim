@@ -1,5 +1,7 @@
 # 🧵 Karni Exim - Premium Textile Products Platform
 
+> **Updated June 2025**: Complete redesign with new color palette and brand identity. [See redesign report](./redesign-completion-report.md) for details.
+
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite)
 ![Firebase](https://img.shields.io/badge/Firebase-11-FFCA28?style=for-the-badge&logo=firebase)

@@ -20,7 +20,6 @@ const HeroSection = () => {
   const handleNavigation = useCallback((productId) => {
     navigate(`/product/${productId}`);
   }, [navigate]);
-
   useEffect(() => {
     const fetchHeroProducts = async () => {
       try {
@@ -46,31 +45,37 @@ const HeroSection = () => {
 
     fetchHeroProducts();
   }, []);
-
-  if (loading) {
+    if (loading) {
     return (
-      <div className="w-full h-96 bg-gray-100 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-full h-96 bg-beige flex items-center justify-center mt-4">
+        <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (heroProducts.length === 0) {
-    // Fallback hero section with just a plain image/gradient
+    // Fallback hero section with just a plain image/gradient      
     return (
-      <section className="relative h-[70vh] md:h-[80vh] bg-gradient-to-br from-blue-900 to-blue-600">
+      <section className="relative h-[70vh] md:h-[80vh] bg-gradient-to-br from-charcoal to-charcoal-light rounded-xl md:rounded-2xl overflow-hidden mx-4 mt-4">
         <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10"></div>
-      </section>
+        <div className="absolute inset-0 flex items-center justify-center flex-col text-white px-4">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">
+            Premium <span className="text-saffron">Textile</span> Products
+          </h1>
+          <p className="text-xl md:text-2xl text-center max-w-3xl">
+            Quality exports from India to global markets
+          </p>
+        </div>      
+        </section>
     );
   }
-
-  return (
-    <section className="w-full relative">
+  
+  return (    <section className="w-full relative px-4 mt-4">
       <Swiper
         modules={[Autoplay, Navigation, Pagination, EffectFade]}
         spaceBetween={0}
         slidesPerView={1}
-        navigation={false}
+        navigation={true}
         pagination={{ 
           clickable: true,
           dynamicBullets: true
@@ -82,8 +87,7 @@ const HeroSection = () => {
           pauseOnMouseEnter: true 
         }}
         loop={heroProducts.length > 1}
-        speed={800}
-        className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] hero-swiper clean-hero"
+        speed={800}        className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] hero-swiper karni-hero rounded-hero"
         grabCursor={true}
       >
         {heroProducts.map((product) => (
@@ -92,7 +96,7 @@ const HeroSection = () => {
             className="relative"
             onClick={() => handleNavigation(product.id)}
           >
-            <div className="h-full w-full bg-gray-100 relative">
+            <div className="h-full w-full bg-beige relative">
               {/* Image placeholder element that shows while loading */}
               <div className="image-placeholder"></div>
               {/* Clean image with native lazy loading */}
@@ -106,6 +110,19 @@ const HeroSection = () => {
                   e.target.src = getImagePlaceholder('hero');
                 }}
               />
+              <div className="absolute inset-0 bg-gradient-to-r from-charcoal/40 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3 lg:w-1/2 text-white">
+                <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-xl">
+                  {product.name}
+                </h2>
+                <p className="text-lg md:text-xl mb-6 drop-shadow-lg">
+                  {product.description?.substring(0, 100)}
+                  {product.description?.length > 100 ? '...' : ''}
+                </p>
+                <button className="bg-saffron text-charcoal px-6 py-2 rounded font-medium hover:bg-opacity-90 transition-all">
+                  View Details
+                </button>
+              </div>
             </div>
           </SwiperSlide>
         ))}

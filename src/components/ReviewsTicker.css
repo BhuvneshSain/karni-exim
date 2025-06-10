@@ -6,7 +6,7 @@
 
 .review-card {
   position: relative;
-  background: linear-gradient(145deg, #ffffff, #f3f7fb);
+  background: linear-gradient(145deg, var(--color-cornsilk), var(--color-beige));
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
   transform: translateZ(0);
 }
@@ -24,7 +24,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(to right, #2563eb, #60a5fa);
+  background: linear-gradient(to right, var(--color-saffron), var(--color-saffron-light, #F5CA47));
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s ease;
@@ -35,7 +35,8 @@
 }
 
 .quote-icon {
-  color: #dbeafe;
+  color: var(--color-saffron);
+  opacity: 0.3;
   font-size: 24px;
   position: absolute;
 }
@@ -57,7 +58,7 @@
   left: 0;
   height: 100%;
   width: 100px;
-  background: linear-gradient(to right, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+  background: linear-gradient(to right, var(--color-beige), rgba(254, 251, 227, 0));
   z-index: 5;
   pointer-events: none;
 }
@@ -68,7 +69,7 @@
   right: 0;
   height: 100%;
   width: 100px;
-  background: linear-gradient(to left, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+  background: linear-gradient(to left, var(--color-beige), rgba(254, 251, 227, 0));
   z-index: 5;
   pointer-events: none;
 }
@@ -81,7 +82,7 @@
 }
 
 .star-rating .active-star {
-  color: #fbbf24;
+  color: var(--color-saffron);
 }
 
 .review-card:hover .active-star {
@@ -91,9 +92,9 @@
 
 /* Avatar pulse effect */
 @keyframes avatar-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(235, 185, 36, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(235, 185, 36, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(235, 185, 36, 0); }
 }
 
 .review-avatar {

@@ -62,3 +62,67 @@ export const getImagePlaceholder = (type = 'hero') => {
   
   return placeholders[type] || placeholders.product;
 };
+
+// New utility functions for image optimization
+
+/**
+ * Creates an optimized image component props for better loading performance
+ * @param {string} src - Image source URL
+ * @param {Object} options - Configuration options
+ * @returns {Object} - Props for image element
+ */
+export const getOptimizedImageProps = (src, options = {}) => {
+  const optimizedSrc = getOptimizedImageUrl(src, options);
+  const placeholder = getImagePlaceholder(options.type || 'product');
+  
+  return {
+    src: optimizedSrc,
+    loading: "lazy", // Native lazy loading
+    decoding: "async", // Async decoding
+    onError: (e) => { e.target.src = placeholder; },
+    alt: options.alt || "Product image",
+    width: options.displayWidth,
+    height: options.displayHeight,
+    className: options.className || "w-full h-auto object-cover"
+  };
+};
+
+/**
+ * Calculate the correct image size based on viewport and container
+ * @param {string} breakpoint - Breakpoint identifier (sm, md, lg, xl)
+ * @returns {number} - Recommended image width
+ */
+export const getResponsiveImageSize = (breakpoint = 'md') => {
+  const sizes = {
+    xs: 350,   // Extra small screens
+    sm: 640,   // Small screens
+    md: 768,   // Medium screens
+    lg: 1024,  // Large screens
+    xl: 1280   // Extra large screens
+  };
+  
+  return sizes[breakpoint] || sizes.md;
+};
+
+/**
+ * Creates a srcset string for responsive images
+ * @param {string} baseUrl - Base image URL
+ * @param {Array} widths - Array of widths to include
+ * @returns {string} - Formatted srcset attribute value
+ */
+export const createSrcSet = (baseUrl, widths = [640, 768, 1024, 1280]) => {
+  if (!baseUrl) return "";
+  
+  // For Firebase Storage or Cloudinary, we can append width parameters
+  if (baseUrl.includes('firebasestorage.googleapis.com') || baseUrl.includes('cloudinary.com')) {
+    const hasParams = baseUrl.includes('?');
+    const connector = hasParams ? '&' : '?';
+    
+    return widths.map(width => 
+      `${baseUrl}${connector}width=${width} ${width}w`
+    ).join(', ');
+  }
+  
+  // For regular URLs, we cannot modify the image dynamically
+  return baseUrl;
+};
