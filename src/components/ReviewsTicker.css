@@ -1,0 +1,102 @@
+/* Reviews Ticker CSS */
+.review-ticker {
+  position: relative;
+  overflow: hidden;
+}
+
+.review-card {
+  position: relative;
+  background: linear-gradient(145deg, #ffffff, #f3f7fb);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07);
+  transform: translateZ(0);
+}
+
+.review-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.review-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, #2563eb, #60a5fa);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.review-card:hover::before {
+  transform: scaleX(1);
+}
+
+.quote-icon {
+  color: #dbeafe;
+  font-size: 24px;
+  position: absolute;
+}
+
+.quote-left {
+  top: 0;
+  left: 0;
+}
+
+.quote-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* Fade effect for ticker */
+.ticker-fadeout-left {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100px;
+  background: linear-gradient(to right, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ticker-fadeout-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100px;
+  background: linear-gradient(to left, rgba(249, 250, 251, 1), rgba(249, 250, 251, 0));
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Animation for star ratings */
+@keyframes star-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.star-rating .active-star {
+  color: #fbbf24;
+}
+
+.review-card:hover .active-star {
+  animation: star-pulse 1s ease;
+  animation-delay: calc(var(--star-index) * 0.1s);
+}
+
+/* Avatar pulse effect */
+@keyframes avatar-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.review-avatar {
+  border-radius: 50%;
+  animation: avatar-pulse 2s infinite;
+}

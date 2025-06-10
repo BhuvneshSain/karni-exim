@@ -3,8 +3,14 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
 import AdminLogin from '../components/AdminLogin';
 import ProductForm from '../components/ProductForm';
+import ReviewManagement from '../components/ReviewManagement';
+import StatsManagement from '../components/StatsManagement';
+import { FaBoxOpen, FaStar, FaChartBar } from 'react-icons/fa';
 
-const Admin = () => {  const [user, setUser] = useState(null);  const [showAdminGuide, setShowAdminGuide] = useState(false);
+const Admin = () => {
+  const [user, setUser] = useState(null);
+  const [showAdminGuide, setShowAdminGuide] = useState(false);
+  const [activeTab, setActiveTab] = useState('products');
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, setUser);
@@ -47,15 +53,15 @@ const Admin = () => {  const [user, setUser] = useState(null);  const [showAdmin
                   </a>
                 </div>
               </div>
-              
-              <div className="mb-6">
+                <div className="mb-6">
                 <h4 className="text-lg font-bold mb-2">Key Features:</h4>
                 <ul className="list-disc pl-6 space-y-1">
                   <li>Product Management (add, edit, delete products)</li>
+                  <li>Review Management (add, edit, approve reviews)</li>
+                  <li>Stats Management (update company statistics)</li>
                   <li>Hero Section Management</li>
                   <li>Best Seller Designation</li>
                   <li>Image Optimization Tools</li>
-                  <li>Debugging Tools</li>
                 </ul>
               </div>
               
@@ -72,21 +78,66 @@ const Admin = () => {  const [user, setUser] = useState(null);  const [showAdmin
           </div>
         </div>
       )}
-      
-      <div className="max-w-7xl mx-auto py-6 px-4">
+        <div className="max-w-7xl mx-auto py-6 px-4">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-blue-100 mt-2">Manage your products and website content</p>            <div className="flex flex-wrap gap-4 mt-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-blue-100 mt-2">Manage your products, reviews, and statistics</p>
+            </div>
+            <div className="flex flex-wrap gap-4 mt-6 md:mt-0">
+              <button
+                onClick={() => setShowAdminGuide(true)}
+                className="bg-white hover:bg-blue-50 text-blue-800 px-4 py-2 rounded-md font-medium transition flex items-center gap-2"
+              >
+                <span>📚</span> Admin Guide
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6 bg-white rounded-lg shadow-md">
+          <div className="flex flex-wrap">
             <button
-              onClick={() => setShowAdminGuide(true)}
-              className="bg-white hover:bg-blue-50 text-blue-800 px-4 py-2 rounded-md font-medium transition flex items-center gap-2"
+              onClick={() => setActiveTab('products')}
+              className={`px-6 py-3 font-medium rounded-tl-lg flex items-center gap-2 ${
+                activeTab === 'products'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-blue-800 hover:bg-blue-50'
+              }`}
             >
-              <span>📚</span> Admin Guide
+              <FaBoxOpen /> Product Management
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+                activeTab === 'reviews'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-blue-800 hover:bg-blue-50'
+              }`}
+            >
+              <FaStar /> Review Management
+            </button>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-6 py-3 font-medium rounded-tr-lg flex items-center gap-2 ${
+                activeTab === 'stats'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-blue-800 hover:bg-blue-50'
+              }`}
+            >
+              <FaChartBar /> Stats Management
             </button>
           </div>
         </div>
         
-        <ProductForm />
+        {/* Tab Content */}
+        <div className="bg-white rounded-lg shadow-md p-1">
+          {activeTab === 'products' && <ProductForm />}
+          {activeTab === 'reviews' && <ReviewManagement />}
+          {activeTab === 'stats' && <StatsManagement />}
+        </div>
       </div>
     </div>
   );

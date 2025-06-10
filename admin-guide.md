@@ -11,14 +11,23 @@ Welcome to the Karni Exim admin guide! This comprehensive document will help you
    - [Deleting Products](#deleting-products)
    - [Image Guidelines](#image-guidelines)
    - [Categories Management](#categories-management)
-3. [Hero Section Management](#hero-section-management)
+3. [Review Management](#review-management)
+   - [Adding Reviews](#adding-reviews)
+   - [Editing Reviews](#editing-reviews)
+   - [Approving Reviews](#approving-reviews)
+   - [Deleting Reviews](#deleting-reviews)
+   - [Review Display Guidelines](#review-display-guidelines)
+4. [Stats Management](#stats-management)
+   - [Updating Company Statistics](#updating-company-statistics)
+   - [Stats Display Guidelines](#stats-display-guidelines)
+5. [Hero Section Management](#hero-section-management)
    - [Setting Up Hero Banner Products](#setting-up-hero-banner-products)
    - [Hero Image Best Practices](#hero-image-best-practices)
    - [Troubleshooting Hero Images](#troubleshooting-hero-images)
-4. [Featured Products](#featured-products)
-5. [Debugging Tools](#debugging-tools)
-6. [Security Best Practices](#security-best-practices)
-7. [Common Issues & Solutions](#common-issues--solutions)
+6. [Featured Products](#featured-products)
+7. [Debugging Tools](#debugging-tools)
+8. [Security Best Practices](#security-best-practices)
+9. [Common Issues & Solutions](#common-issues--solutions)
 
 ## Accessing the Admin Panel
 
@@ -126,6 +135,132 @@ Welcome to the Karni Exim admin guide! This comprehensive document will help you
    - Use clear, concise category names
    - Maintain a reasonable number of categories (avoid excessive fragmentation)
    - Consider your customers' browsing habits when organizing products
+
+## Review Management
+
+The Review Management section allows you to handle customer testimonials and reviews that appear on the homepage in the reviews ticker.
+
+### Adding Reviews
+
+1. **Access the Review Management Tab**
+   - From the admin panel, click on the "Review Management" tab
+   - You'll see the review form and a list of existing reviews
+
+2. **Fill out the Review Form**
+   - Customer Name: Enter the full name of the reviewer
+   - Company Name: Enter the company name (if applicable)
+   - Review Text: Enter the customer's review or testimonial
+   - Rating: Select a rating from 1-5 stars
+   - Approved Status: Set to "Yes" to make the review visible on the website immediately
+
+3. **Submit the Review**
+   - Click "Add Review" to save the new review
+   - The review will appear in the reviews list below
+   - Only approved reviews will show on the website
+
+### Editing Reviews
+
+1. **Locate the Review to Edit**
+   - Scroll through the reviews list at the bottom of the review management section
+   - Reviews are listed with their approval status clearly indicated
+
+2. **Click the Edit Button**
+   - The review details will be loaded into the form
+   - You can modify any field as needed
+
+3. **Make Necessary Changes**
+   - Update the customer name, company, review text, or rating
+   - You can also change the approval status
+
+4. **Save Changes**
+   - Click "Update Review" to save your changes
+   - The review listing will refresh automatically
+
+### Approving Reviews
+
+1. **Understanding Approval Status**
+   - Only approved reviews appear on the website
+   - Unapproved reviews are stored but not displayed to visitors
+
+2. **Approval Methods**
+   - When editing a review: Set the "Approved" dropdown to "Yes"
+   - From the reviews list: Click the approval toggle button (changes from red X to green checkmark)
+
+3. **Approval Best Practices**
+   - Review all content before approval to ensure it's appropriate
+   - Check for spelling and grammatical errors
+   - Ensure the review is authentic and provides value to potential customers
+
+### Deleting Reviews
+
+1. **Locate the Review to Delete**
+   - Find the review in the review list
+   - Consider simply disapproving instead of deleting if you want to keep the record
+
+2. **Click the Delete Button**
+   - You will be prompted to confirm deletion
+   - This action cannot be undone
+
+3. **Confirm Deletion**
+   - The review will be permanently removed from your database
+
+### Review Display Guidelines
+
+1. **Review Content Best Practices**
+   - Keep reviews concise (50-200 words is ideal)
+   - Include the customer's company name when applicable
+   - Ensure reviews highlight specific product benefits or customer experiences
+
+2. **Managing Review Visibility**
+   - Maintain a balanced mix of reviews for different products/services
+   - Regularly refresh your approved reviews to keep content current
+   - Aim for 10-20 high-quality reviews rather than a large quantity of generic ones
+
+3. **Review Ticker Appearance**
+   - Reviews appear in a horizontal sliding ticker on desktop screens
+   - On mobile devices, reviews display in a responsive grid layout
+   - Review cards show the customer name, company, star rating, and review text
+
+## Stats Management
+
+The Stats Management section allows you to update the company statistics that appear in the counter section of the homepage.
+
+### Updating Company Statistics
+
+1. **Access the Stats Management Tab**
+   - From the admin panel, click on the "Stats Management" tab
+   - You'll see the statistics form with current values and a live preview
+
+2. **Edit Company Statistics**
+   - Products Offered: Enter the number of products your company offers
+   - Years in Business: Enter how many years your company has been operating
+   - Satisfied Clients: Enter the number of clients served
+   - Satisfaction Rate: Enter your customer satisfaction percentage (0-100)
+
+3. **Review Changes in Preview**
+   - As you make changes, the live preview updates automatically
+   - This shows exactly how the stats will appear on the homepage
+
+4. **Save Statistics**
+   - Click "Update Statistics" to save your changes
+   - The new values will immediately appear on the website
+
+### Stats Display Guidelines
+
+1. **Number Formatting**
+   - Large numbers will automatically display with appropriate formatting
+   - For example, 1000000 will display as "1M+"
+   - Use whole numbers without commas or decimal points
+
+2. **Statistics Best Practices**
+   - Use authentic and verifiable numbers
+   - Update stats periodically to reflect company growth
+   - Avoid excessively large or unrealistic values
+   - Round numbers to make them more memorable (e.g., 43 years instead of 43.5)
+
+3. **Reset to Default**
+   - If needed, you can click "Reset to Default" to restore the original values
+   - This is helpful if you make an error or want to start over
 
 ## Hero Section Management
 
@@ -255,4 +390,4 @@ Welcome to the Karni Exim admin guide! This comprehensive document will help you
 
 For additional help or questions not covered in this guide, please contact your website developer or maintenance team.
 
-Last updated: June 2025
+Last updated: August 2023

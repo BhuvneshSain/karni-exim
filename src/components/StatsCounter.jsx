@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const CounterAnimation = ({ end, duration = 2, suffix = '', formatter = null }) => {
   const [count, setCount] = useState(0);
@@ -43,10 +45,35 @@ const CounterAnimation = ({ end, duration = 2, suffix = '', formatter = null }) 
 };
 
 const StatsCounter = () => {
+  const [stats, setStats] = useState({
+    products: 3000,
+    years: 43,
+    clients: 600000,
+    satisfaction: 100
+  });
+  const [loading, setLoading] = useState(true);
+
   // Format large numbers with commas
   const formatNumber = (num) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
+  
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const statsDoc = await getDoc(doc(db, "settings", "stats"));
+        if (statsDoc.exists()) {
+          setStats(statsDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStats();
+  }, []);
 
   return (
     <motion.section 
@@ -61,11 +88,10 @@ const StatsCounter = () => {
           Why choose Karni Exim?
         </h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {/* Product Count */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">          {/* Product Count */}
           <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
-              <CounterAnimation end={3000} suffix="+" />
+              <CounterAnimation end={stats.products} suffix="+" />
             </div>
             <div className="uppercase tracking-wider font-semibold text-gray-800">
               STAINLESS STEEL PRODUCTS
@@ -75,7 +101,7 @@ const StatsCounter = () => {
           {/* Years of Expertise */}
           <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
-              <CounterAnimation end={43} suffix="+" />
+              <CounterAnimation end={stats.years} suffix="+" />
             </div>
             <div className="uppercase tracking-wider font-semibold text-gray-800">
               YEARS OF EXPERTISE
@@ -86,7 +112,7 @@ const StatsCounter = () => {
           <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
               <CounterAnimation 
-                end={600000} 
+                end={stats.clients} 
                 suffix="+" 
                 duration={2.5}
                 formatter={formatNumber} 
@@ -100,7 +126,7 @@ const StatsCounter = () => {
           {/* Satisfaction Rate */}
           <div className="p-8 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
             <div className="text-blue-500 text-5xl md:text-6xl font-bold mb-4">
-              <CounterAnimation end={100} suffix="%" />
+              <CounterAnimation end={stats.satisfaction} suffix="%" />
             </div>
             <div className="uppercase tracking-wider font-semibold text-gray-800">
               SATISFACTION RATE

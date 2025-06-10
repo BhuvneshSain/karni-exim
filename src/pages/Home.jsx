@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import useProducts from '../hooks/useProducts';
 import HeroSection from '../components/HeroSection';
 import StatsCounter from '../components/StatsCounter';
+import ReviewsTicker from '../components/ReviewsTicker';
 import { motion } from 'framer-motion';
 import { FaMedal, FaShippingFast, FaHeadset } from 'react-icons/fa';
 
@@ -152,8 +153,9 @@ const Home = () => {
               </p>
             </motion.div>
           </div>
-        </div>
-      </section>
+        </div>      </section>      
+      {/* Customer Reviews Section */}
+      <ReviewsTicker />
     </div>
   );
 };
