@@ -72,9 +72,9 @@ const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Facebook"
-                className="hover:scale-110 transition-transform bg-transparent hover:bg-blue-800 rounded-full p-2"
+                className="hover:scale-110 transition-transform bg-transparent hover:bg-blue-700 rounded-full p-2"
               >
-                <FaFacebookF className="text-gray-300 hover:text-white transition" />
+                <FaFacebookF className="text-gray-300 hover:text-white transition-colors text-lg" />
               </a>              <a 
                 href="https://www.instagram.com/karni_exim/" 
                 target="_blank" 
@@ -82,22 +82,20 @@ const Footer = () => {
                 aria-label="Instagram"
                 className="hover:scale-110 transition-transform hover:bg-gradient-to-r hover:from-pink-500 hover:to-yellow-500 rounded-full p-2"
               >
-                <FaInstagram className="text-gray-300 hover:text-white transition" />
-              </a>              <a 
+                <FaInstagram className="text-gray-300 hover:text-white transition-colors text-lg" />
+              </a><a 
                 href="https://wa.me/918209987858?text=Hi%20Karni%20Exim,%20I'm%20interested%20in%20your%20products."
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
                 className="hover:scale-110 transition-transform hover:bg-green-700 rounded-full p-2"
                 data-action="share/whatsapp/share"
-              >
-                <FaWhatsapp className="text-gray-300 hover:text-white transition" />
-              </a>              <a 
+              >                <FaWhatsapp className="text-gray-300 hover:text-white transition-colors text-lg" />
+              </a><a 
                 href="tel:+918209987858"
                 aria-label="Call Us"
                 className="hover:scale-110 transition-transform hover:bg-blue-700 rounded-full p-2"
-              >
-                <FaPhone className="text-gray-300 hover:text-white transition" />
+              >                <FaPhone className="text-gray-300 hover:text-white transition-colors text-lg" />
               </a>
             </div>
             <p className="text-sm">

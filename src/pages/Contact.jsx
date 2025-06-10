@@ -66,19 +66,43 @@ const Contact = () => {
               </a>
             </div>
           </motion.div>
-          
-          <motion.div
+            <motion.div
             initial={{ x: 50 }}
             animate={{ x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="relative"
           >
-            <iframe
-              title="Karni Exim Location"
-              className="w-full h-full min-h-[300px] rounded-lg shadow-md border-2 border-saffron/20"
-              src="https://maps.google.com/maps?q=karni%20exim%20bikaner&t=&z=13&ie=UTF8&iwloc=&output=embed"
-              allowFullScreen=""
-              loading="lazy"
-            ></iframe>
+            {/* Fallback map image in case the iframe is blocked */}
+            <div className="w-full h-full min-h-[300px] rounded-lg shadow-md border-2 border-saffron/20 bg-cornsilk overflow-hidden">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-cornsilk">
+                <p className="text-charcoal mb-2">
+                  <strong>Karni Exim</strong><br />
+                  Plot No. 5, Suraj Colony<br />
+                  Near Udasar Army Gate<br />
+                  Bikaner-334001, Rajasthan, India
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  (Map view may be blocked by privacy settings)
+                </p>                <a
+                  href="https://www.openstreetmap.org/?mlat=28.0229&mlon=73.3119#map=15/28.0229/73.3119"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-block bg-saffron hover:bg-saffron/80 text-charcoal px-4 py-2 rounded shadow-sm text-sm"
+                >
+                  View on Map
+                </a>
+              </div>              <iframe
+                title="Karni Exim Location"
+                className="w-full h-full min-h-[300px] absolute inset-0 z-10"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=73.3050%2C28.0190%2C73.3180%2C28.0270&amp;layer=mapnik&amp;marker=28.0229%2C73.3113"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              ></iframe>
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -54,19 +54,22 @@ const ProductDetails = () => {
           if (ogTitle) ogTitle.setAttribute('content', productData.name);
           if (ogDescription) ogDescription.setAttribute('content', productData.description.substring(0, 160));
           if (ogImage && productData.mainImage) ogImage.setAttribute('content', productData.mainImage);
-          
-          // Fetch related products
+            // Fetch related products without requiring a custom index
           const q = query(
             collection(db, 'products'),
             where('category', '==', productData.category),
-            where('id', '!=', id),
-            limit(4)
+            limit(10)
           );
           const querySnapshot = await getDocs(q);
-          const related = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
+          
+          // Filter out the current product and limit to 4 items in JavaScript
+          const related = querySnapshot.docs
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }))
+            .filter(product => product.id !== id)
+            .slice(0, 4);
           setRelatedProducts(related);
         }
       } catch (error) {
@@ -242,34 +245,31 @@ Thanks & Regards,
             {/* Social Sharing Section */}
             <div className="mt-6 pt-4 border-t border-saffron/20">
               <p className="text-gray-600 mb-3 text-sm font-medium">Share this product:</p>
-              <div className="flex space-x-3">
-                <a 
+              <div className="flex space-x-3">                <a 
                   href={whatsappShareLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors flex items-center justify-center"
+                  className="bg-white border-2 border-green-500 text-green-500 p-2 rounded-full hover:bg-green-100 transition-colors flex items-center justify-center"
                   aria-label="Share on WhatsApp"
                   data-action="share/whatsapp/share"
                 >
-                  <FaWhatsapp size={16} />
-                </a>
-                <a 
+                  <FaWhatsapp size={18} />
+                </a><a 
                   href={facebookShareLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  className="bg-white border-2 border-blue-600 text-blue-600 p-2 rounded-full hover:bg-blue-100 transition-colors flex items-center justify-center"
                   aria-label="Share on Facebook"
                 >
                   <FaFacebookF size={16} />
-                </a>
-                <a 
+                </a>                <a 
                   href={emailShareLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gray-600 text-white p-2 rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center"
+                  className="bg-white border-2 border-gray-600 text-gray-600 p-2 rounded-full hover:bg-gray-100 transition-colors flex items-center justify-center"
                   aria-label="Share via Email"
                 >
-                  <FaEnvelope size={16} />
+                  <FaEnvelope size={18} />
                 </a>
               </div>
             </div>
