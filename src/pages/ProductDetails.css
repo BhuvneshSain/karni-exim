@@ -1,0 +1,48 @@
+/* Custom styles for Product Details page */
+
+/* Product image slider with pagination blur effect */
+.product-slider {
+  position: relative;
+}
+
+.product-slider::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px; /* Height of the gradient */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: 5; /* Above images but below controls */
+  border-bottom-left-radius: 0.5rem; /* Match the rounded corners of the container */
+  border-bottom-right-radius: 0.5rem;
+}
+
+/* Enhance pagination visibility */
+.product-slider .slick-dots {
+  bottom: 10px; /* Position dots a bit higher */
+  z-index: 10; /* Ensure dots are above the gradient */
+}
+
+.product-slider .slick-dots li button:before {
+  color: white;
+  opacity: 0.7;
+  font-size: 10px;
+}
+
+.product-slider .slick-dots li.slick-active button:before {
+  color: white;
+  opacity: 1;
+}
+
+/* Image container styling */
+.product-slider .slick-slide div {
+  outline: none; /* Remove focus outline */
+}
+
+/* Arrows styling */
+.product-slider .slick-prev, 
+.product-slider .slick-next {
+  z-index: 10; /* Ensure arrows are above the gradient */
+}

@@ -1,0 +1,133 @@
+/* Custom styles for the hero section slider */
+.thumbs-swiper {
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.thumbs-swiper .swiper-slide {
+  width: 100px;
+  height: 60px;
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.thumbs-swiper .swiper-slide-thumb-active {
+  opacity: 1;
+  border: 2px solid white;
+}
+
+/* Add gradient overlay for better pagination visibility */
+.hero-swiper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px; /* Height of the gradient */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: 5; /* Above images but below controls */
+}
+
+.hero-swiper .swiper-pagination {
+  z-index: 10; /* Ensure pagination is above the gradient */
+}
+
+.hero-swiper .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  opacity: 0.7;
+}
+
+.hero-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+  background-color: #3b82f6;
+}
+
+.hero-swiper .swiper-button-next,
+.hero-swiper .swiper-button-prev {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-swiper .swiper-button-next:after,
+.hero-swiper .swiper-button-prev:after {
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .hero-swiper .swiper-button-next,
+  .hero-swiper .swiper-button-prev {
+    display: none;
+  }
+}
+
+/* Image loading animation */
+.hero-swiper .image-placeholder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  z-index: 1;
+}
+
+.hero-swiper .image-placeholder::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fade-in animation for images */
+.hero-swiper img {
+  animation: fadeIn 0.5s ease-in;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Clean hero specific styles */
+.clean-hero .swiper-pagination {
+  bottom: 16px;
+}
+
+.clean-hero .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  opacity: 0.7;
+}
+
+.clean-hero .swiper-pagination-bullet-active {
+  opacity: 1;
+  background-color: white;
+}
