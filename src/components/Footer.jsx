@@ -67,40 +67,37 @@ const Footer = () => {
           {/* Social & Contact */}
           <div className="text-center md:text-left">
             <h3 className="text-lg font-medium text-white mb-3">Connect With Us</h3>
-            <div className="flex justify-center md:justify-start gap-4 text-2xl mb-4">
-              <a 
+            <div className="flex justify-center md:justify-start gap-4 text-2xl mb-4">              <a 
                 href="https://www.facebook.com/0Karniexim/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 aria-label="Facebook"
-                className="hover:scale-110 transition-transform"
+                className="hover:scale-110 transition-transform bg-transparent hover:bg-blue-800 rounded-full p-2"
               >
-                <FaFacebookF className="hover:text-blue-500 transition" />
-              </a>
-              <a 
+                <FaFacebookF className="text-gray-300 hover:text-white transition" />
+              </a>              <a 
                 href="https://www.instagram.com/karni_exim/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="hover:scale-110 transition-transform"
+                className="hover:scale-110 transition-transform hover:bg-gradient-to-r hover:from-pink-500 hover:to-yellow-500 rounded-full p-2"
               >
-                <FaInstagram className="hover:text-pink-500 transition" />
-              </a>
-              <a 
-                href="https://wa.me/918209987858"
+                <FaInstagram className="text-gray-300 hover:text-white transition" />
+              </a>              <a 
+                href="https://wa.me/918209987858?text=Hi%20Karni%20Exim,%20I'm%20interested%20in%20your%20products."
                 target="_blank" 
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
-                className="hover:scale-110 transition-transform"
+                className="hover:scale-110 transition-transform hover:bg-green-700 rounded-full p-2"
+                data-action="share/whatsapp/share"
               >
-                <FaWhatsapp className="hover:text-green-500 transition" />
-              </a>
-              <a 
+                <FaWhatsapp className="text-gray-300 hover:text-white transition" />
+              </a>              <a 
                 href="tel:+918209987858"
                 aria-label="Call Us"
-                className="hover:scale-110 transition-transform"
+                className="hover:scale-110 transition-transform hover:bg-blue-700 rounded-full p-2"
               >
-                <FaPhone className="hover:text-blue-400 transition" />
+                <FaPhone className="text-gray-300 hover:text-white transition" />
               </a>
             </div>
             <p className="text-sm">

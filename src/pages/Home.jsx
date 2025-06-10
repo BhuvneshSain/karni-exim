@@ -5,6 +5,7 @@ import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { FaMedal, FaShippingFast, FaHeadset } from 'react-icons/fa';
 import ProductCard from '../components/ProductCard';
+import SocialMediaPreview from '../components/SocialMediaPreview';
 
 // Lazy load components that are not needed immediately
 const StatsCounter = lazy(() => import('../components/StatsCounter'));
@@ -20,9 +21,14 @@ const LoadingFallback = () => (
 const Home = () => {
   const navigate = useNavigate();
   const { products, loading } = useProducts();
-  const bestsellers = products.filter(p => p.isBestSeller);
-  return (
+  const bestsellers = products.filter(p => p.isBestSeller);  return (
     <div className="w-full">
+      {/* SEO and Social Media Preview */}
+      <SocialMediaPreview
+        title="Karni Exim | Premium Textile Products from India"
+        description="Quality textile exports from India to global markets. Explore our collection of premium textile products, crafted with care for international standards."
+      />
+      
       {/* Hero Section */}
       <HeroSection />
       

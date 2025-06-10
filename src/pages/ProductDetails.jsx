@@ -5,6 +5,8 @@ import { db } from '../firebase';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
+import { generateProductSchema, setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
+import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './ProductDetails.css'; // Import custom styles
@@ -15,8 +17,10 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
   useEffect(() => {
+    // Set canonical URL for SEO
+    setCanonicalUrl(`/product/${id}`);
+    
     const fetchProduct = async () => {
       setLoading(true);
       try {
@@ -25,6 +29,31 @@ const ProductDetails = () => {
         if (snap.exists()) {
           const productData = { id: snap.id, ...snap.data() };
           setProduct(productData);
+          
+          // Set up product schema for SEO
+          const productSchema = generateProductSchema(productData);
+          
+          // Add product schema to the page
+          const script = document.createElement('script');
+          script.setAttribute('type', 'application/ld+json');
+          script.textContent = JSON.stringify(productSchema);
+          document.head.appendChild(script);
+          
+          // Set page title and meta description for SEO
+          document.title = `${productData.name} | Karni Exim Premium Products`;
+          const metaDescription = document.querySelector('meta[name="description"]');
+          if (metaDescription) {
+            metaDescription.setAttribute('content', productData.description.substring(0, 160));
+          }
+          
+          // Update OG tags for social sharing
+          const ogTitle = document.querySelector('meta[property="og:title"]');
+          const ogDescription = document.querySelector('meta[property="og:description"]');
+          const ogImage = document.querySelector('meta[property="og:image"]');
+          
+          if (ogTitle) ogTitle.setAttribute('content', productData.name);
+          if (ogDescription) ogDescription.setAttribute('content', productData.description.substring(0, 160));
+          if (ogImage && productData.mainImage) ogImage.setAttribute('content', productData.mainImage);
           
           // Fetch related products
           const q = query(
@@ -93,7 +122,6 @@ const ProductDetails = () => {
       }
     ]
   };
-
  const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
   `👋 Hello Karni Exim Team,
 
@@ -101,13 +129,18 @@ I'm interested in the following product:
 
 🛍️ *Product:* ${product.name}
 📂 *Category:* ${product.category}
-🔗 *Product Link:* https://karni-exim-new.netlify.app/products/${product.id}
+🔗 *Product Link:* https://karni-exim-new.netlify.app/product/${product.id}
 
 Please provide a quote or more details.
 
 Thanks & Regards,
 `
 )}`;
+
+  // Social sharing links
+  const whatsappShareLink = generateWhatsAppShareLink(product);
+  const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://karni-exim-new.netlify.app/product/${product.id}`)}`;
+  const emailShareLink = `mailto:?subject=${encodeURIComponent(`Check out ${product.name} from Karni Exim`)}&body=${encodeURIComponent(`I thought you might be interested in this product from Karni Exim:\n\n${product.name}\n\n${product.description}\n\nCheck it out here: https://karni-exim-new.netlify.app/product/${product.id}`)}`;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10">
@@ -193,8 +226,7 @@ Thanks & Regards,
                 </svg>
                 Get Quote on WhatsApp
               </motion.a>
-              
-              <motion.a
+                <motion.a
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 href={`mailto:info@karniexim.com?subject=Inquiry about ${product.name}&body=Hello Karni Exim Team,%0D%0A%0D%0AI'm interested in the following product:%0D%0A%0D%0AProduct: ${product.name}%0D%0ACategory: ${product.category}%0D%0A%0D%0APlease provide a quote or more details.%0D%0A%0D%0AThanks & Regards`}
@@ -205,6 +237,41 @@ Thanks & Regards,
                 </svg>
                 Email Inquiry
               </motion.a>
+            </div>
+            
+            {/* Social Sharing Section */}
+            <div className="mt-6 pt-4 border-t border-saffron/20">
+              <p className="text-gray-600 mb-3 text-sm font-medium">Share this product:</p>
+              <div className="flex space-x-3">
+                <a 
+                  href={whatsappShareLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors flex items-center justify-center"
+                  aria-label="Share on WhatsApp"
+                  data-action="share/whatsapp/share"
+                >
+                  <FaWhatsapp size={16} />
+                </a>
+                <a 
+                  href={facebookShareLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  aria-label="Share on Facebook"
+                >
+                  <FaFacebookF size={16} />
+                </a>
+                <a 
+                  href={emailShareLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-600 text-white p-2 rounded-full hover:bg-gray-700 transition-colors flex items-center justify-center"
+                  aria-label="Share via Email"
+                >
+                  <FaEnvelope size={16} />
+                </a>
+              </div>
             </div>
           </motion.div>
         </div>

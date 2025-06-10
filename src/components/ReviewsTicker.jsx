@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FaStar, FaQuoteLeft, FaQuoteRight, FaExclamationTriangle, FaSync } from 'react-icons/fa';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { checkFirebaseConfig } from '../debug/env-check';
+import { checkFirebaseConfig } from '../utils/env-check';
 import './ReviewsTicker.css';
 
 const ReviewCard = ({ review, index }) => {

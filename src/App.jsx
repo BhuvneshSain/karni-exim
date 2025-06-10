@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import BackToTop from './components/BackToTop';
+import { generateSeoTitle, setCanonicalUrl } from './utils/seoOptimizer';
 import 'flowbite';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -35,6 +36,31 @@ const PageLoading = () => (
 const App = () => {
   const [showHeroDebug, setShowHeroDebug] = useState(false);
   const location = useLocation();
+    // Update metadata and SEO for each page
+  useEffect(() => {
+    // Set canonical URL for SEO
+    setCanonicalUrl(location.pathname);
+    
+    // Set page title based on current route
+    let pageTitle = "Home";
+    if (location.pathname.includes('/products') && !location.pathname.includes('/product/')) {
+      pageTitle = "Products";
+    } else if (location.pathname.includes('/about')) {
+      pageTitle = "About Us";
+    } else if (location.pathname.includes('/contact')) {
+      pageTitle = "Contact Us";
+    } else if (location.pathname.includes('/privacy-policy')) {
+      pageTitle = "Privacy Policy";
+    } else if (location.pathname.includes('/terms-of-service')) {
+      pageTitle = "Terms of Service";
+    }
+    
+    // Skip title update for product detail pages (they handle their own titles)
+    if (!location.pathname.includes('/product/')) {
+      document.title = generateSeoTitle(pageTitle);
+    }
+    
+  }, [location.pathname]);
   
   // Check URL parameters for debug flag
   useEffect(() => {

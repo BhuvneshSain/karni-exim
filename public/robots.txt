@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://karni-exim-new.netlify.app/sitemap.xml
+
+# Block admin areas
+Disallow: /karni-admin/
+Disallow: /admin/
+Disallow: /bestseller-hero/
+
+# Block certain file types
+Disallow: /*.json$
+Disallow: /*.md$
