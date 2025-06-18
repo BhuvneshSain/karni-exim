@@ -13,7 +13,9 @@
     "diagnose-reviews": "node admin/fix-review-timestamps.mjs",
     "verify-reviews": "node admin/verify-reviews.js",
     "cleanup": "node cleanup.js",
-    "deploy": "npm run lint && npm run build:netlify && npm run preview"
+    "deploy": "node deploy.mjs",
+    "deploy:check": "npm run lint && npm run build:netlify && npm run preview",
+    "verify-domain": "node verify-domain.mjs"
   },
   "dependencies": {
     "animate.css": "^4.1.1",

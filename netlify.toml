@@ -13,10 +13,21 @@
   to = "/index.html"
   status = 200
 
+# Redirect www to non-www (after domain setup)
+[[redirects]]
+  from = "https://www.karniexim.com/*"
+  to = "https://karniexim.com/:splat"
+  status = 301
+  force = true
+
 # Headers for security and caching
 [[headers]]
   for = "/*"
     [headers.values]
     Cache-Control = "public, max-age=3600"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore/lite';
 
 const CounterAnimation = ({ end, duration = 2, suffix = '', formatter = null }) => {
   const [count, setCount] = useState(0);
