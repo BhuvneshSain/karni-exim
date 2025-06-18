@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import useProducts from '../hooks/useProducts';
 import HeroSection from '../components/HeroSection';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { FaMedal, FaShippingFast, FaHeadset } from 'react-icons/fa';
@@ -12,16 +13,13 @@ const StatsCounter = lazy(() => import('../components/StatsCounter'));
 const ReviewsTicker = lazy(() => import('../components/ReviewsTicker'));
 
 // Loading fallback for lazy components
-const LoadingFallback = () => (
-  <div className="flex justify-center py-8">
-    <div className="w-10 h-10 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-  </div>
-);
+const LoadingFallback = () => <LoadingSpinner text="Loading..." />;
 
 const Home = () => {
-  const navigate = useNavigate();
-  const { products, loading } = useProducts();
-  const bestsellers = products.filter(p => p.isBestSeller);  return (
+  const navigate = useNavigate();  const { products, loading } = useProducts({ isBestSeller: true, limit: 6 });
+  const bestsellers = products; // Already filtered by isBestSeller in useProducts hook
+
+  return (
     <div className="w-full">
       {/* SEO and Social Media Preview */}
       <SocialMediaPreview
@@ -43,13 +41,10 @@ const Home = () => {
             className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-8 md:mb-12"
           >
             Featured Products
-          </motion.h2>
-            {loading ? (
-            <div className="flex justify-center py-16">
-              <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-            </div>
+          </motion.h2>          {loading ? (
+            <LoadingSpinner text="Loading featured products..." />
           ) :(
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">              {bestsellers.slice(0, 6).map((product, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">              {bestsellers.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}

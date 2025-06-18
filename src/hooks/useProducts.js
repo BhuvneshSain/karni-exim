@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore/lite';
+import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
 
 // Cache for storing products data
 const productsCache = {
@@ -27,6 +27,9 @@ const useProducts = (options = {}) => {
   const [error, setError] = useState(null);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  
+  // Reduce initial loading time by checking cache first before setting loading state
+  const [initialCacheCheck, setInitialCacheCheck] = useState(false);
 
   // Determine if we should use cache
   const shouldUseCache = () => {
@@ -75,19 +78,53 @@ const useProducts = (options = {}) => {
       setLoading(false);
     }
   }, [category, isBestSeller, queryLimit, lastVisible, hasMore]);
-
   // Initial data fetch
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
+      // Check cache first before showing loading state
+      if (!initialCacheCheck) {
+        const useCache = shouldUseCache();
+        
+        if (useCache) {
+          let cachedData;
+          
+          if (category && productsCache.categories[category]) {
+            cachedData = productsCache.categories[category];
+          } else if (isBestSeller && productsCache.bestSellers) {
+            cachedData = productsCache.bestSellers;
+          } else if (!category && !isBestSeller && productsCache.allProducts) {
+            cachedData = productsCache.allProducts;
+          }
+          
+          if (cachedData) {
+            let filteredData = filterOutOfStock 
+              ? cachedData.filter(p => !p.outOfStock) 
+              : cachedData;
+              
+            if (queryLimit && filteredData.length > queryLimit) {
+              filteredData = filteredData.slice(0, queryLimit);
+              setHasMore(true);
+            } else {
+              setHasMore(false);
+            }
+            
+            setProducts(filteredData);
+            setLoading(false);
+            setInitialCacheCheck(true);
+            return;
+          }
+        }
+        setInitialCacheCheck(true);
+      }
       
+      setLoading(true);
+      setError(null);      
       try {
         // Check if we can use cache
         const useCache = shouldUseCache();
         
         // If cache exists and is valid for the specific query
-        if (useCache) {
+        if (useCache && !initialCacheCheck) {
           let cachedData;
           
           // Determine which data to use from cache

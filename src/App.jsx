@@ -2,6 +2,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import LoadingSpinner from './components/LoadingSpinner';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import BackToTop from './components/BackToTop';
 import { generateSeoTitle, setCanonicalUrl } from './utils/seoOptimizer';
@@ -24,14 +25,7 @@ const BestsellerHero = lazy(() => import('./components/BestsellerHero'));
 const HeroDebug = lazy(() => import('./components/HeroDebug'));
 
 // Loading component for suspense fallback
-const PageLoading = () => (
-  <div className="flex justify-center items-center h-[50vh]">
-    <div className="flex flex-col items-center">
-      <div className="w-16 h-16 border-4 border-saffron border-t-transparent rounded-full animate-spin mb-4"></div>
-      <p className="text-charcoal font-medium">Loading page...</p>
-    </div>
-  </div>
-);
+const PageLoading = () => <LoadingSpinner text="Loading page..." fullScreen />;
 
 const App = () => {
   const [showHeroDebug, setShowHeroDebug] = useState(false);

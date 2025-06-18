@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { FaChartLine, FaSave, FaUndo } from 'react-icons/fa';
+import LoadingSpinner from './LoadingSpinner';
 
 const StatsManagement = () => {
   const [stats, setStats] = useState({
@@ -77,12 +78,8 @@ const StatsManagement = () => {
     setStats({...initialStats});
     setHasChanges(false);
   };
-    if (loading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+  if (loading) {
+    return <LoadingSpinner text="Loading statistics..." />;
   }
   
   return (

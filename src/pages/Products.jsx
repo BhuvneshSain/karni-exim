@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import useProducts from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Products = () => {
   const { products, loading } = useProducts();
@@ -11,12 +12,7 @@ const Products = () => {
   
   const filteredProducts = selectedCategory === 'all' 
     ? products
-    : products.filter(p => p.category === selectedCategory);
-  if (loading) return (
-    <div className="flex justify-center items-center py-16">
-      <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
+    : products.filter(p => p.category === selectedCategory);  if (loading) return <LoadingSpinner text="Loading products..." />;
   return (
     <div className="w-full bg-beige py-8 md:py-12">
       <div className="w-full max-w-7xl mx-auto px-4">

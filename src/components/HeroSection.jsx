@@ -9,6 +9,7 @@ import './HeroSection.css'; // Import custom styles
 import { useNavigate } from 'react-router-dom';
 import { collection, query, where, getDocs } from 'firebase/firestore/lite';
 import { db } from '../firebase';
+import LoadingSpinner from './LoadingSpinner';
 import { getOptimizedImageUrl, getImagePlaceholder } from '../utils/imageOptimizer';
 
 const HeroSection = () => {
@@ -45,10 +46,10 @@ const HeroSection = () => {
 
     fetchHeroProducts();
   }, []);
-    if (loading) {
+  if (loading) {
     return (
       <div className="w-full h-96 bg-beige flex items-center justify-center mt-4">
-        <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
+        <LoadingSpinner text="Loading hero content..." />
       </div>
     );
   }

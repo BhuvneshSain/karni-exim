@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, writeBatch, query, orderBy, limit } from 'firebase/firestore/lite';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, Timestamp, writeBatch } from 'firebase/firestore';
 import { motion } from 'framer-motion';
-import { FaStar, FaTrash, FaCheck, FaTimes, FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaStar, FaTrash, FaCheck, FaTimes, FaEdit } from 'react-icons/fa';
+import LoadingSpinner from './LoadingSpinner';
 
 const ReviewManagement = () => {
   const [reviews, setReviews] = useState([]);
@@ -144,81 +145,13 @@ const ReviewManagement = () => {
     setRating(5);
     setText('');
     setEditingId(null);
-    setShowForm(false);
-  };
-  
-  // Function to delete all reviews except the most recent one
-  const deleteAllButMostRecent = async () => {
-    if (!window.confirm("Are you sure you want to delete all reviews except the most recent one? This action cannot be undone.")) {
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      // First, get the most recent review
-      const mostRecentQuery = query(
-        collection(db, "reviews"),
-        orderBy("createdAt", "desc"),
-        limit(1)
-      );
-      const mostRecentSnapshot = await getDocs(mostRecentQuery);
-      
-      if (mostRecentSnapshot.empty) {
-        alert("No reviews found to keep");
-        setLoading(false);
-        return;
-      }
-      
-      const mostRecentId = mostRecentSnapshot.docs[0].id;
-      
-      // Now get all reviews
-      const allReviewsSnapshot = await getDocs(collection(db, "reviews"));
-      
-      // Delete all except the most recent
-      const batch = writeBatch(db);
-      let deleteCount = 0;
-      
-      allReviewsSnapshot.forEach(docSnapshot => {
-        if (docSnapshot.id !== mostRecentId) {
-          batch.delete(doc(db, "reviews", docSnapshot.id));
-          deleteCount++;
-        }
-      });
-      
-      if (deleteCount > 0) {
-        await batch.commit();
-        alert(`Deleted ${deleteCount} older reviews. Only kept the most recent review.`);
-      } else {
-        alert("There's only one review in the database. Nothing to delete.");
-      }
-      
-      // Refresh the reviews list
-      fetchReviews();
-    } catch (error) {
-      console.error("Error deleting reviews:", error);
-      alert(`Error: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setShowForm(false);  };
     return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-blue-800">
           {showForm ? (editingId ? 'Edit Review' : 'Add New Review') : 'Review Management'}
-        </h2>
-        <div className="flex gap-2">
-          {!showForm && (
-            <button
-              onClick={deleteAllButMostRecent}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow hover:shadow-md transition flex items-center gap-1"
-              disabled={loading}
-              title="Keep only the most recent review"
-            >
-              <FaTrashAlt /> Keep Only Latest
-            </button>
-          )}
+        </h2>        <div className="flex gap-2">
           <button
             onClick={() => setShowForm(!showForm)}
             className={`${showForm ? 'bg-gray-200 text-gray-800' : 'bg-blue-600 text-white'} px-4 py-2 rounded shadow hover:shadow-md transition`}
@@ -315,11 +248,8 @@ const ReviewManagement = () => {
         </motion.form>
       )}
       
-      {/* Reviews List */}
-      <div>        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-          </div>
+      {/* Reviews List */}      <div>        {loading ? (
+          <LoadingSpinner text="Loading reviews..." />
         ) :reviews.length > 0 ? (
           <div className="space-y-4">
             {reviews.map((review) => (              <motion.div

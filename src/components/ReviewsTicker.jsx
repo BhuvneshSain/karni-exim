@@ -2,8 +2,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaStar, FaQuoteLeft, FaQuoteRight, FaExclamationTriangle, FaSync } from 'react-icons/fa';
 import { db } from '../firebase';
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore/lite';
+import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { checkFirebaseConfig } from '../utils/env-check';
+import LoadingSpinner from './LoadingSpinner';
 import './ReviewsTicker.css';
 
 const ReviewCard = ({ review, index }) => {
@@ -256,12 +257,7 @@ const ReviewsTicker = () => {
         >
           What Our Clients Say
         </motion.h2>
-        
-        {loading && (
-          <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+          {loading && <LoadingSpinner text="Loading reviews..." />}
         
         {error && import.meta.env.DEV && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 mx-auto max-w-2xl">

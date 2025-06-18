@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { generateProductSchema, setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
 import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
 import 'slick-carousel/slick/slick.css';
@@ -82,12 +83,7 @@ const ProductDetails = () => {
     
     // Scroll to top when page loads
     window.scrollTo(0, 0);
-  }, [id]);
-  if (loading) return (
-    <div className="flex justify-center items-center py-20">
-      <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  );
+  }, [id]);  if (loading) return <LoadingSpinner text="Loading product details..." />;
     if (!product) return (
     <div className="max-w-4xl mx-auto px-4 py-16 text-center">
       <h2 className="text-2xl font-bold text-charcoal-dark">Product not found</h2>

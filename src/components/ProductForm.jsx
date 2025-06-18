@@ -13,6 +13,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useProducts from '../hooks/useProducts';
 import { motion } from 'framer-motion';
 import { validateImageDimensions } from '../utils/imageOptimizer';
+import LoadingSpinner from './LoadingSpinner';
 import Tooltip from './Tooltip';
 import { getImageSizeRecommendation, formatImageRecommendation } from '../utils/imageSizeRecommendations';
 
@@ -515,9 +516,7 @@ const ProductForm = () => {
         transition={{ duration: 0.4 }}
       >
         <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-12 h-12 border-4 border-saffron border-t-transparent rounded-full animate-spin"></div>
-          </div>
+          <LoadingSpinner text="Loading products..." />
         ) :(
           <div className="space-y-4">
             {products.map((p) => (              <div key={p.id} className="p-4 border rounded shadow-sm bg-white flex flex-col sm:flex-row items-start sm:items-center gap-4">
