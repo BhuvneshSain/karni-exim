@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaStar, FaQuoteLeft, FaQuoteRight, FaExclamationTriangle, FaSync } from 'react-icons/fa';
 import { db } from '../firebase';
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore/lite';
 import { checkFirebaseConfig } from '../utils/env-check';
 import LoadingSpinner from './LoadingSpinner';
 import './ReviewsTicker.css';

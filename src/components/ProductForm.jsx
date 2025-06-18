@@ -8,7 +8,7 @@ import {
   doc,
   deleteDoc,
   getDoc,
-} from 'firebase/firestore';
+} from 'firebase/firestore/lite';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useProducts from '../hooks/useProducts';
 import { motion } from 'framer-motion';

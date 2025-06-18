@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore/lite';
 import { motion } from 'framer-motion';
 import { FaChartLine, FaSave, FaUndo } from 'react-icons/fa';
 import LoadingSpinner from './LoadingSpinner';

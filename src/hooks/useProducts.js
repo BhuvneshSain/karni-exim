@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { db } from '../firebase';
-import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore/lite';
 
 // Cache for storing products data
 const productsCache = {
