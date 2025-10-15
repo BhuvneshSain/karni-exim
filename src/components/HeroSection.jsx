@@ -62,10 +62,13 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10"></div>
         <div className="absolute inset-0 flex items-center justify-center flex-col text-white px-4">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">
-            Premium <span className="text-saffron">Textile</span> Products
+            <span className="text-saffron">Bulk Export</span> & Manufacturing
           </h1>
-          <p className="text-xl md:text-2xl text-center max-w-3xl">
-            Quality exports from India to global markets
+          <p className="text-xl md:text-2xl text-center max-w-3xl mb-2">
+            Leading Textile Manufacturer & Exporter from Bikaner, Rajasthan
+          </p>
+          <p className="text-lg md:text-xl text-center max-w-2xl text-white/90">
+            Own Production Facility | Import-Export Solutions | B2B Bulk Orders
           </p>
         </div>      
         </section>

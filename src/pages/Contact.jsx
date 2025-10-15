@@ -13,7 +13,7 @@ const Contact = () => {
         transition={{ duration: 0.5 }}
         className="text-3xl md:text-4xl font-bold text-charcoal text-center mb-8"
       >
-        Get in Touch
+        Contact Us - Bulk Orders & Import-Export Inquiries
       </motion.h2>      {/* Remove loading spinner for static content */}
       <motion.div 
         initial={{ opacity: 0 }}
@@ -27,6 +27,16 @@ const Contact = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="bg-cornsilk rounded-lg shadow-md p-6 border border-saffron/20"
           >
+            <div className="mb-6 p-4 bg-saffron/10 rounded-lg border-l-4 border-saffron">
+              <p className="text-charcoal font-semibold text-lg mb-2">
+                📦 Bulk Orders & B2B Inquiries Welcome
+              </p>
+              <p className="text-charcoal/80">
+                Manufacturer & exporter with own production facility in Bikaner, Rajasthan. 
+                Specializing in bulk export and import-export solutions worldwide.
+              </p>
+            </div>
+            
             <div className="text-charcoal space-y-4 text-lg">
               <p className="flex items-start gap-2">
                 <span className="text-saffron text-2xl">📍</span> 
@@ -40,16 +50,20 @@ const Contact = () => {
                 <span className="text-saffron text-2xl">📞</span> 
                 <span><strong className="text-charcoal-dark">Phone:</strong> <a className="text-saffron hover:underline" href="tel:+918209987858">+91 82099 87858</a></span>
               </p>
+              <p className="flex items-start gap-2">
+                <span className="text-saffron text-2xl">🌍</span> 
+                <span><strong className="text-charcoal-dark">Services:</strong> Import-Export, Bulk Manufacturing, B2B Solutions</span>
+              </p>
             </div>
             
             <div className="mt-8 flex justify-center">
               <a
-                href="https://wa.me/918209987858?text=Hi%20Karni%20Exim!%20I'm%20interested%20in%20your%20products"
+                href="https://wa.me/918209987858?text=Hi%20Karni%20Exim!%20I'm%20interested%20in%20bulk%20orders%20and%20import-export%20services"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-charcoal hover:bg-charcoal-dark text-white px-6 py-3 rounded-lg shadow-md transition text-lg"
               >
-                💬 Chat with Us on WhatsApp
+                💬 WhatsApp for Bulk Orders
               </a>
             </div>          </motion.div>
 

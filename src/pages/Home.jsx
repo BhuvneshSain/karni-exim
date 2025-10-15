@@ -23,8 +23,8 @@ const Home = () => {
     <div className="w-full">
       {/* SEO and Social Media Preview */}
       <SocialMediaPreview
-        title="Karni Exim | Premium Textile Products from India"
-        description="Quality textile exports from India to global markets. Explore our collection of premium textile products, crafted with care for international standards."
+        title="Karni Exim | Bulk Textile Manufacturer & Exporter from Bikaner, Rajasthan"
+        description="Leading manufacturer & bulk exporter of premium textiles from Bikaner, Rajasthan. Own production facility for import-export worldwide. B2B bulk orders welcome. Quality made-in-India products for global markets."
       />
       
       {/* Hero Section */}
