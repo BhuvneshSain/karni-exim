@@ -1,26 +1,21 @@
 import { Link } from 'react-router-dom';
 import { getOptimizedImageProps, createSrcSet } from '../utils/imageOptimizer';
 import { memo } from 'react';
+import ProgressiveImage from './ProgressiveImage';
 
 const ProductCard = ({ product }) => {
   // Handle missing fields gracefully
   const category = product.category || '';
   
-  // Get optimized image props
-  const imageProps = getOptimizedImageProps(product.mainImage, {
-    type: 'product',
-    alt: product.name,
-    displayWidth: 640,
-    className: "w-full h-48 sm:h-52 md:h-60 object-cover"
-  });
   return (
     <div className="bg-cornsilk rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:scale-[1.02] hover:translate-y-[-5px] transition-all duration-300 h-full flex flex-col group">
-      <div className="relative">
-        <img
-          {...imageProps}
-          srcSet={createSrcSet(product.mainImage, [400, 640, 768])}
-          sizes="(max-width: 640px) 400px, (max-width: 768px) 640px, 768px"
-          className={`${imageProps.className} group-hover:opacity-95 transition-opacity`}
+      <div className="relative h-48 sm:h-52 md:h-60 bg-gray-100">
+        <ProgressiveImage
+          src={product.mainImage}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:opacity-95 transition-opacity"
+          loading="lazy"
+          fetchPriority="auto"
         />
         <div className="absolute top-0 left-0 w-full p-2 flex justify-between">
           {product.isBestSeller && (

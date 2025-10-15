@@ -12,7 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useProducts from '../hooks/useProducts';
 import { motion } from 'framer-motion';
-import { validateImageDimensions } from '../utils/imageOptimizer';
+import { validateImageDimensions, compressImage, needsCompression } from '../utils/imageOptimizer';
 import LoadingSpinner from './LoadingSpinner';
 import Tooltip from './Tooltip';
 import { getImageSizeRecommendation, formatImageRecommendation } from '../utils/imageSizeRecommendations';
@@ -157,23 +157,38 @@ const ProductForm = () => {
     try {
       let mainImageUrl = previewMainImage;
       if (mainImage) {
-        const mainRef = ref(storage, `products/${Date.now()}_${mainImage.name}`);
-        await uploadBytes(mainRef, mainImage);
+        // Compress image before upload if needed
+        const imageToUpload = needsCompression(mainImage) 
+          ? await compressImage(mainImage, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 })
+          : mainImage;
+          
+        const mainRef = ref(storage, `products/${Date.now()}_${imageToUpload.name}`);
+        await uploadBytes(mainRef, imageToUpload);
         mainImageUrl = await getDownloadURL(mainRef);
       }
 
       let heroImageUrl = previewHeroImage;
       if (heroImage && isHero) {
-        const heroRef = ref(storage, `products/hero_${Date.now()}_${heroImage.name}`);
-        await uploadBytes(heroRef, heroImage);
+        // Compress hero image before upload
+        const imageToUpload = needsCompression(heroImage)
+          ? await compressImage(heroImage, { maxWidth: 2400, maxHeight: 1600, quality: 0.85 })
+          : heroImage;
+          
+        const heroRef = ref(storage, `products/hero_${Date.now()}_${imageToUpload.name}`);
+        await uploadBytes(heroRef, imageToUpload);
         heroImageUrl = await getDownloadURL(heroRef);
         console.log("Hero image uploaded:", heroImageUrl); // Debug log
       }
 
       const otherImageUrls = [];
       for (let file of otherImages) {
-        const fileRef = ref(storage, `products/${Date.now()}_${file.name}`);
-        await uploadBytes(fileRef, file);
+        // Compress each additional image
+        const imageToUpload = needsCompression(file)
+          ? await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 })
+          : file;
+          
+        const fileRef = ref(storage, `products/${Date.now()}_${imageToUpload.name}`);
+        await uploadBytes(fileRef, imageToUpload);
         const url = await getDownloadURL(fileRef);
         otherImageUrls.push(url);
       }
@@ -291,32 +306,50 @@ const ProductForm = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
-        {editProductId ? 'Edit Product' : 'Add New Product'}
-      </h2>
+      <header>
+        <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
+          {editProductId ? 'Edit Product' : 'Add New Product'}
+        </h2>
+      </header>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md" aria-label={editProductId ? 'Edit product form' : 'Add new product form'}>
+        <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-0 p-0 m-0">
+          <legend className="sr-only">Product Basic Information</legend>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+            <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
+              Product Name <span className="text-red-500" aria-label="required">*</span>
+            </label>
             <input
+              id="product-name"
+              name="name"
               type="text"
               placeholder="Product Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={`border rounded px-4 py-2 w-full ${validationErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+              aria-required="true"
+              aria-invalid={!!validationErrors.name}
+              aria-describedby={validationErrors.name ? 'name-error' : undefined}
             />
             {validationErrors.name && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>
+              <p id="name-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.name}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-500" aria-label="required">*</span>
+            </label>
             <select
+              id="product-category"
+              name="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className={`border rounded px-4 py-2 w-full ${validationErrors.category ? 'border-red-500' : 'border-gray-300'}`}
+              aria-required="true"
+              aria-invalid={!!validationErrors.category}
+              aria-describedby={validationErrors.category ? 'category-error' : undefined}
             >
               <option value="">-- Select Category --</option>
               {categories.map(cat => (
@@ -325,129 +358,162 @@ const ProductForm = () => {
               <option value="custom">Other (type below)</option>
             </select>
             {validationErrors.category && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.category}</p>
+              <p id="category-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.category}</p>
             )}
           </div>
-        </div>
+        </fieldset>
 
         {category === 'custom' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Custom Category</label>
+            <label htmlFor="custom-category" className="block text-sm font-medium text-gray-700 mb-1">
+              Custom Category <span className="text-red-500" aria-label="required">*</span>
+            </label>
             <input
+              id="custom-category"
+              name="customCategory"
               type="text"
               placeholder="New Category"
               value={customCategory}
               onChange={(e) => setCustomCategory(e.target.value)}
               className={`border rounded px-4 py-2 w-full ${validationErrors.customCategory ? 'border-red-500' : 'border-gray-300'}`}
+              aria-required="true"
+              aria-invalid={!!validationErrors.customCategory}
+              aria-describedby={validationErrors.customCategory ? 'custom-category-error' : undefined}
             />
             {validationErrors.customCategory && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.customCategory}</p>
+              <p id="custom-category-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.customCategory}</p>
             )}
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
+            id="product-description"
+            name="description"
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="border border-gray-300 rounded px-4 py-2 w-full"
             rows="4"
+            aria-describedby="description-help"
           />
+          <p id="description-help" className="text-xs text-gray-500 mt-1">Provide a detailed description of the product</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">          {/* Main Image Upload */}
+        <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-6 border-0 p-0 m-0">
+          <legend className="sr-only">Product Images</legend>          {/* Main Image Upload */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <label className="block text-sm font-medium text-gray-700">Main Product Image:</label>
+              <label htmlFor="main-image" className="block text-sm font-medium text-gray-700">
+                Main Product Image <span className="text-red-500" aria-label="required">*</span>
+              </label>
               <Tooltip text={getImageSizeRecommendation('main').description}>
-                <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help">?</span>
+                <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
               </Tooltip>
             </div>
             <input
+              id="main-image"
+              name="mainImage"
               type="file"
               onChange={(e) => setMainImage(e.target.files[0])}
               className={`w-full border px-3 py-2 rounded ${validationErrors.mainImage ? 'border-red-500' : 'border-gray-300'}`}
               accept="image/*"
+              aria-required="true"
+              aria-invalid={!!validationErrors.mainImage}
+              aria-describedby="main-image-help main-image-error"
             />
-            <p className="text-xs text-blue-600 mt-1">
+            <p id="main-image-help" className="text-xs text-blue-600 mt-1">
               Recommended size: {formatImageRecommendation('main')}
             </p>
             {validationErrors.mainImage && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.mainImage}</p>
+              <p id="main-image-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.mainImage}</p>
             )}
             {previewMainImage && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-1">Preview:</p>
+              <figure className="mt-2">
+                <figcaption className="text-sm text-gray-600 mb-1">Preview:</figcaption>
                 <div className="w-full h-40 bg-gray-100 rounded overflow-hidden">
                   <img src={previewMainImage} alt="Product preview" className="w-full h-full object-contain" />
                 </div>
-              </div>
+              </figure>
             )}
-          </div>          {/* Hero Image Upload */}
+          </div>
+
+          {/* Hero Image Upload */}
           <div className={`space-y-2 ${isHero ? '' : 'opacity-60'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <label className="block text-sm font-medium text-gray-700">Hero Banner Image:</label>
+                <label htmlFor="hero-image" className="block text-sm font-medium text-gray-700">Hero Banner Image</label>
                 <Tooltip text={getImageSizeRecommendation('hero').description}>
-                  <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help">?</span>
+                  <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
                 </Tooltip>
               </div>
               <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="isHero"
+                  name="isHero"
                   checked={isHero}
                   onChange={(e) => setIsHero(e.target.checked)}
                   className="mr-2 h-4 w-4"
+                  aria-describedby="hero-checkbox-help"
                 />
                 <label htmlFor="isHero" className="text-sm font-medium text-gray-700">Show in Hero Banner</label>
               </div>
             </div>
             <input
+              id="hero-image"
+              name="heroImage"
               type="file"
               onChange={(e) => setHeroImage(e.target.files[0])}
               className={`w-full border px-3 py-2 rounded ${validationErrors.heroImage ? 'border-red-500' : 'border-gray-300'}`}
               disabled={!isHero}
               accept="image/*"
+              aria-invalid={!!validationErrors.heroImage}
+              aria-describedby="hero-image-help hero-image-error"
             />
             {validationErrors.heroImage && (
-              <p className="text-red-500 text-xs mt-1">{validationErrors.heroImage}</p>
-            )}            {isHero ? (
-              <p className="text-xs text-blue-600 mt-1">
+              <p id="hero-image-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.heroImage}</p>
+            )}
+            {isHero ? (
+              <p id="hero-image-help" className="text-xs text-blue-600 mt-1">
                 Recommended size: {formatImageRecommendation('hero')}
               </p>
             ) : (
-              <p className="text-xs text-amber-600 mt-1">
+              <p id="hero-checkbox-help" className="text-xs text-amber-600 mt-1">
                 Enable "Show in Hero Banner" to upload a hero image.
               </p>
             )}
             {previewHeroImage && isHero && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600 mb-1">Hero Preview:</p>
+              <figure className="mt-2">
+                <figcaption className="text-sm text-gray-600 mb-1">Hero Preview:</figcaption>
                 <div className="w-full h-40 bg-gray-100 rounded overflow-hidden">
                   <img src={previewHeroImage} alt="Hero preview" className="w-full h-full object-cover" />
                 </div>
-              </div>
+              </figure>
             )}
           </div>
-        </div>        {/* Other Images */}
+        </fieldset>
+
+        {/* Other Images */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <label className="block text-sm font-medium text-gray-700">Additional Images:</label>
+            <label htmlFor="other-images" className="block text-sm font-medium text-gray-700">Additional Images</label>
             <Tooltip text={getImageSizeRecommendation('additional').description}>
-              <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help">?</span>
+              <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
             </Tooltip>
           </div>
           <input
+            id="other-images"
+            name="otherImages"
             type="file"
             multiple
             onChange={(e) => setOtherImages([...e.target.files])}
             className="w-full border border-gray-300 px-3 py-2 rounded"
             accept="image/*"
+            aria-describedby="other-images-help"
           />
-          <p className="text-xs text-blue-600 mt-1">
+          <p id="other-images-help" className="text-xs text-blue-600 mt-1">
             Recommended size: {formatImageRecommendation('additional')} (multiple images allowed)
           </p>
           {previewOtherImages.length > 0 && (
@@ -484,13 +550,13 @@ const ProductForm = () => {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition"
+            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium rounded transition border border-gray-400"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded shadow transition"
+            className="bg-saffron hover:bg-saffron/90 text-white font-semibold px-6 py-2 rounded shadow-md hover:shadow-lg transition border border-saffron"
             disabled={submitting}
           >
             {submitting ? (

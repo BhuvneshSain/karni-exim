@@ -49,3 +49,13 @@
   color: var(--color-primary);
   font-size: 28px;
 }
+/* Image loading shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+

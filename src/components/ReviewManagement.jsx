@@ -154,7 +154,7 @@ const ReviewManagement = () => {
         </h2>        <div className="flex gap-2">
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${showForm ? 'bg-gray-200 text-gray-800' : 'bg-blue-600 text-white'} px-4 py-2 rounded shadow hover:shadow-md transition`}
+            className={`${showForm ? 'bg-gray-300 text-gray-900 border-gray-400' : 'bg-saffron text-white border-saffron'} px-4 py-2 rounded shadow-md hover:shadow-lg transition font-medium border`}
           >
             {showForm ? 'Cancel' : 'Add New Review'}
           </button>
@@ -234,13 +234,13 @@ const ReviewManagement = () => {
             <button
               type="button"
               onClick={resetForm}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded"
+              className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium rounded border border-gray-400"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+              className="px-4 py-2 bg-saffron hover:bg-saffron/90 text-white font-semibold rounded shadow-md hover:shadow-lg border border-saffron"
             >
               {editingId ? 'Update Review' : 'Add Review'}
             </button>

@@ -90,7 +90,7 @@ const StatsManagement = () => {
           {hasChanges && (
             <button
               onClick={resetChanges}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded flex items-center gap-2"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium px-4 py-2 rounded shadow-md hover:shadow-lg transition flex items-center gap-2 border border-gray-400"
               title="Discard Changes"
             >
               <FaUndo /> Reset
@@ -99,7 +99,7 @@ const StatsManagement = () => {
           <button
             onClick={saveStats}
             disabled={!hasChanges || saving}
-            className={`${hasChanges ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded flex items-center gap-2`}
+            className={`${hasChanges ? 'bg-saffron hover:bg-saffron/90 shadow-md hover:shadow-lg border-saffron' : 'bg-gray-400 cursor-not-allowed border-gray-400'} text-white font-semibold px-4 py-2 rounded transition flex items-center gap-2 border`}
           >
             {saving ? (
               <>

@@ -11,6 +11,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 import LoadingSpinner from './LoadingSpinner';
 import { getOptimizedImageUrl, getImagePlaceholder } from '../utils/imageOptimizer';
+import ProgressiveImage from './ProgressiveImage';
 
 const HeroSection = () => {
   const [heroProducts, setHeroProducts] = useState([]);
@@ -98,13 +99,12 @@ const HeroSection = () => {
             onClick={() => handleNavigation(product.id)}
           >
             <div className="h-full w-full bg-beige relative">
-              {/* Image placeholder element that shows while loading */}
-              <div className="image-placeholder"></div>
-              {/* Clean image with native lazy loading */}
-              <img
+              {/* Progressive image with high priority for LCP */}
+              <ProgressiveImage
                 src={getOptimizedImageUrl(product.heroImage || product.mainImage, { type: 'hero' })}
                 className="w-full h-full object-cover"
-                loading="lazy"
+                loading="eager"
+                fetchPriority="high"
                 alt={product.name || 'Product image'}
                 onError={(e) => {
                   e.target.onerror = null;

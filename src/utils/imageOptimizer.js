@@ -126,3 +126,149 @@ export const createSrcSet = (baseUrl, widths = [640, 768, 1024, 1280]) => {
   // For regular URLs, we cannot modify the image dynamically
   return baseUrl;
 };
+
+/**
+ * Compress image file before upload to reduce file size
+ * @param {File} file - Image file to compress
+ * @param {Object} options - Compression options
+ * @returns {Promise<File>} - Compressed image file
+ */
+export const compressImage = async (file, options = {}) => {
+  const {
+    maxWidth = 1920,
+    maxHeight = 1920,
+    quality = 0.8,
+    type = 'image/jpeg'
+  } = options;
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Enable image smoothing for better quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        
+        // Draw image on canvas
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert canvas to blob
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Canvas to Blob conversion failed'));
+              return;
+            }
+            
+            // Create new file from blob
+            const compressedFile = new File(
+              [blob], 
+              file.name.replace(/\.[^/.]+$/, '.jpg'), // Change extension to jpg
+              { 
+                type,
+                lastModified: Date.now() 
+              }
+            );
+            
+            // Log compression results
+            const originalSize = (file.size / 1024 / 1024).toFixed(2);
+            const compressedSize = (compressedFile.size / 1024 / 1024).toFixed(2);
+            const savings = ((1 - compressedFile.size / file.size) * 100).toFixed(1);
+            
+            console.log(`Image compressed: ${originalSize}MB → ${compressedSize}MB (${savings}% reduction)`);
+            
+            resolve(compressedFile);
+          },
+          type,
+          quality
+        );
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Generate a low-quality placeholder from an image file
+ * @param {File} file - Original image file
+ * @returns {Promise<string>} - Data URL of placeholder
+ */
+export const generatePlaceholder = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Very small dimensions for placeholder
+        const width = 20;
+        const height = Math.round((img.height / img.width) * width);
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Get data URL with low quality
+        const placeholder = canvas.toDataURL('image/jpeg', 0.1);
+        resolve(placeholder);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image for placeholder'));
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
+/**
+ * Batch compress multiple images
+ * @param {File[]} files - Array of image files
+ * @param {Object} options - Compression options
+ * @returns {Promise<File[]>} - Array of compressed files
+ */
+export const compressImages = async (files, options = {}) => {
+  const compressionPromises = files.map(file => compressImage(file, options));
+  return Promise.all(compressionPromises);
+};
+
+/**
+ * Check if image needs compression
+ * @param {File} file - Image file
+ * @param {number} maxSizeMB - Maximum size in MB
+ * @returns {boolean}
+ */
+export const needsCompression = (file, maxSizeMB = 2) => {
+  const sizeMB = file.size / 1024 / 1024;
+  return sizeMB > maxSizeMB;
+};
