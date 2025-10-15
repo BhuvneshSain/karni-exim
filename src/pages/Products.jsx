@@ -1,18 +1,40 @@
 // src/pages/Products.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import useProducts from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Products = () => {
   const { products, loading } = useProducts();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Read category from URL on mount and when URL changes
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category');
+    if (categoryFromUrl) {
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [searchParams]);
 
   const categories = ['all', ...new Set(products.map(p => p.category))];
   
   const filteredProducts = selectedCategory === 'all' 
     ? products
-    : products.filter(p => p.category === selectedCategory);  if (loading) return <LoadingSpinner text="Loading products..." />;
+    : products.filter(p => p.category === selectedCategory);
+  
+  // Handle category change - update both state and URL
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    if (category === 'all') {
+      setSearchParams({}); // Clear query params
+    } else {
+      setSearchParams({ category }); // Set category query param
+    }
+  };
+
+  if (loading) return <LoadingSpinner text="Loading products..." />;
   return (
     <div className="w-full bg-beige py-8 md:py-12">
       <div className="w-full max-w-7xl mx-auto px-4">
