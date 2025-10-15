@@ -5,7 +5,6 @@ import App from './App.jsx';
 import './index.css';
 import './theme.css'; // Import our theme variables
 import './design-system.css'; // Import our design system
-import 'animate.css'; // Import animate.css
 import './components/FooterFix.css'; // Import footer positioning fix
 
 // Import image optimization utilities (will auto-setup on import)

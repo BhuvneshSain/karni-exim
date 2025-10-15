@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const PrivacyPolicy = () => {
   const navigate = useNavigate();
@@ -14,13 +15,18 @@ const PrivacyPolicy = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">
-      <h1 className="text-3xl md:text-5xl font-bold text-blue-800 mb-6 md:mb-8 text-center animate__animated animate__fadeInDown">
+    <motion.div 
+      className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <h1 className="text-3xl md:text-5xl font-bold text-blue-800 mb-6 md:mb-8 text-center">
         Privacy Policy
       </h1>
       
-      <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 space-y-6 animate__animated animate__fadeIn animate__delay-1s">
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-1s">
+      <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 space-y-6">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Introduction</h2>
           <p className="text-gray-700">
             This Privacy Policy describes how Karni Exim ("we," "us," or "our") collects, uses, and discloses your information 
@@ -29,7 +35,7 @@ const PrivacyPolicy = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-2s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Information We Collect</h2>
           <p className="text-gray-700 mb-3">
             We may collect personal information that you provide directly to us, such as when you contact us,
@@ -41,7 +47,9 @@ const PrivacyPolicy = () => {
             <li>Information about your requests and interactions with our products</li>
             <li>Any other information you choose to provide</li>
           </ul>
-        </section>        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-3s">
+        </section>
+
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-charcoal-dark mb-3">How We Use Information</h2>
           <p className="text-gray mb-3">
             We may use the information we collect for various purposes, including to:
@@ -57,7 +65,7 @@ const PrivacyPolicy = () => {
           </ul>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-4s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Sharing of Information</h2>
           <p className="text-gray-700">
             We do not sell your personal information. However, we may share information as follows:
@@ -71,7 +79,7 @@ const PrivacyPolicy = () => {
           </ul>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Data Security</h2>
           <p className="text-gray-700">
             We take reasonable measures to help protect information about you from loss, theft, misuse, and unauthorized 
@@ -80,13 +88,15 @@ const PrivacyPolicy = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Your Rights</h2>
           <p className="text-gray-700">
             Depending on your location, you may have certain rights regarding your personal information. Please contact us 
             if you would like to exercise any of these rights, including accessing, correcting, or deleting your information.
           </p>
-        </section>        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        </section>
+
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Changes to this Privacy Policy</h2>
           <p className="text-gray-700">
             We may update this Privacy Policy from time to time. If we make material changes, we will notify you as required by applicable law.
@@ -94,7 +104,7 @@ const PrivacyPolicy = () => {
           </p>
         </section>
         
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Contact Us</h2>
           <p className="text-gray-700">
             If you have any questions about this Privacy Policy, please contact us at:
@@ -117,14 +127,17 @@ const PrivacyPolicy = () => {
             </svg>
             Chat with Us on WhatsApp
           </button>
-        </section><div className="text-gray-500 text-sm text-center pt-4 border-t border-gray-200 mt-6">
-          Last Updated: June 8, 2025
+        </section>
+
+        <div className="text-gray-500 text-sm text-center pt-4 border-t border-gray-200 mt-6">
+          Last Updated: October 15, 2025
         </div>
         
         {/* Related Links */}
-        <div className="mt-8 pt-4 border-t border-gray-200 animate__animated animate__fadeIn animate__delay-5s">
+        <div className="mt-8 pt-4 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-blue-700 mb-3 text-center">Related Information</h3>
-          <div className="flex flex-wrap justify-center gap-4">            <button onClick={() => navigate('/terms-of-service')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
+          <div className="flex flex-wrap justify-center gap-4">
+            <button onClick={() => navigate('/terms-of-service')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
               Terms of Service
             </button>
             <button onClick={() => navigate('/products')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
@@ -139,10 +152,7 @@ const PrivacyPolicy = () => {
           </div>
         </div>
       </div>
-      
-      {/* Back to Top Button */}
-      
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const TermsOfService = () => {
   const navigate = useNavigate();
@@ -14,12 +15,18 @@ const TermsOfService = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12">      <h1 className="text-3xl md:text-5xl font-bold text-charcoal-dark mb-6 md:mb-8 text-center animate__animated animate__fadeInDown">
+    <motion.div 
+      className="w-full max-w-7xl mx-auto px-4 py-8 md:py-12"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <h1 className="text-3xl md:text-5xl font-bold text-charcoal-dark mb-6 md:mb-8 text-center">
         Terms of Service
       </h1>
       
-      <div className="bg-cornsilk rounded-lg shadow-lg p-6 md:p-8 space-y-6 animate__animated animate__fadeIn animate__delay-1s">
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-1s">          <h2 className="text-xl md:text-2xl font-semibold text-charcoal-dark mb-3">Welcome to Karni Exim</h2>
+      <div className="bg-cornsilk rounded-lg shadow-lg p-6 md:p-8 space-y-6">
+        <section>          <h2 className="text-xl md:text-2xl font-semibold text-charcoal-dark mb-3">Welcome to Karni Exim</h2>
           <p className="text-gray">
             These Terms of Service ("Terms") govern your access to and use of the Karni Exim website located at karniexim.com (the "Site"). 
             By accessing or using the Site, you agree to be bound by these Terms. If you do not agree to these Terms, 
@@ -27,7 +34,7 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-2s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Use of Our Site</h2>
           <p className="text-gray-700 mb-3">
             You may use our Site only for lawful purposes and in accordance with these Terms. You agree not to:
@@ -41,7 +48,7 @@ const TermsOfService = () => {
           </ul>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-3s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Products and Services</h2>
           <p className="text-gray-700 mb-3">
             All products displayed on our Site are subject to availability. We reserve the right to discontinue any 
@@ -53,7 +60,7 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-4s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Accuracy of Information</h2>
           <p className="text-gray-700">
             We strive to ensure that the information on our Site is accurate and complete. However, we do not warrant 
@@ -62,7 +69,7 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Intellectual Property Rights</h2>
           <p className="text-gray-700">
             The Site and its entire contents, features, and functionality (including but not limited to all information, 
@@ -71,7 +78,7 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Limitation of Liability</h2>
           <p className="text-gray-700">
             To the fullest extent permitted by law, Karni Exim shall not be liable for any indirect, incidental, special, 
@@ -80,7 +87,7 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Indemnification</h2>
           <p className="text-gray-700">
             You agree to indemnify and hold harmless Karni Exim and its officers, directors, employees, and agents 
@@ -89,14 +96,16 @@ const TermsOfService = () => {
           </p>
         </section>
 
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Governing Law</h2>
           <p className="text-gray-700">
             These Terms shall be governed by and construed in accordance with the laws of India, without regard to its 
             conflict of law principles. Any dispute arising from these Terms shall be subject to the exclusive jurisdiction 
             of the courts in Rajasthan, India.
           </p>
-        </section>        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        </section>
+
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Changes to Terms</h2>
           <p className="text-gray-700">
             We may revise these Terms from time to time. The most current version will always be posted on our Site. 
@@ -104,7 +113,7 @@ const TermsOfService = () => {
           </p>
         </section>
         
-        <section className="transition-all duration-300 hover:translate-x-1 animate__animated animate__fadeInLeft animate__delay-5s">
+        <section>
           <h2 className="text-xl md:text-2xl font-semibold text-blue-700 mb-3">Contact Us</h2>
           <p className="text-gray-700">
             If you have any questions about these Terms, please contact us at:
@@ -127,14 +136,17 @@ const TermsOfService = () => {
             </svg>
             Chat with Us on WhatsApp
           </button>
-        </section><div className="text-gray-500 text-sm text-center pt-4 border-t border-gray-200 mt-6">
-          Last Updated: June 8, 2025
+        </section>
+
+        <div className="text-gray-500 text-sm text-center pt-4 border-t border-gray-200 mt-6">
+          Last Updated: October 15, 2025
         </div>
         
         {/* Related Links */}
-        <div className="mt-8 pt-4 border-t border-gray-200 animate__animated animate__fadeIn animate__delay-5s">
+        <div className="mt-8 pt-4 border-t border-gray-200">
           <h3 className="text-lg font-semibold text-blue-700 mb-3 text-center">Related Information</h3>
-          <div className="flex flex-wrap justify-center gap-4">            <button onClick={() => navigate('/privacy-policy')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
+          <div className="flex flex-wrap justify-center gap-4">
+            <button onClick={() => navigate('/privacy-policy')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
               Privacy Policy
             </button>
             <button onClick={() => navigate('/products')} className="inline-block px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors duration-300">
@@ -149,9 +161,7 @@ const TermsOfService = () => {
           </div>
         </div>
       </div>
-        {/* Back to Top Button */}
-      
-    </div>
+    </motion.div>
   );
 };
 
