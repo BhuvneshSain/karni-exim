@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:netlify": "node fix-firebase-build.js && vite build",
+    "build:netlify": "node fix-firebase-build.js && node generate-sitemap.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "fix-reviews": "node admin/update-reviews-flags.mjs",
@@ -15,7 +15,8 @@
     "cleanup": "node cleanup.js",
     "deploy": "node deploy.mjs",
     "deploy:check": "npm run lint && npm run build:netlify && npm run preview",
-    "verify-domain": "node verify-domain.mjs"
+    "verify-domain": "node verify-domain.mjs",
+    "generate-sitemap": "node generate-sitemap.mjs"
   },
   "dependencies": {
     "animate.css": "^4.1.1",

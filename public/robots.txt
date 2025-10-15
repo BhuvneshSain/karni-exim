@@ -1,7 +1,14 @@
 User-agent: *
 Allow: /
+Allow: /products
+Allow: /product/*
 
 Sitemap: https://karni-exim-new.netlify.app/sitemap.xml
+
+# Explicitly allow product pages for better crawling
+User-agent: Googlebot
+Allow: /product/*
+Allow: /products
 
 # Block admin areas
 Disallow: /karni-admin/
@@ -11,3 +18,7 @@ Disallow: /bestseller-hero/
 # Block certain file types
 Disallow: /*.json$
 Disallow: /*.md$
+
+# Crawl delay for general bots (not Google)
+User-agent: *
+Crawl-delay: 1

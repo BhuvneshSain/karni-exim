@@ -6,6 +6,7 @@ import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ProductSEO from '../components/ProductSEO';
 import { generateProductSchema, setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
 import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
 import 'slick-carousel/slick/slick.css';
@@ -143,6 +144,9 @@ Thanks & Regards,
 
   return (
     <article className="max-w-6xl mx-auto px-4 py-6 sm:py-10" itemScope itemType="https://schema.org/Product">
+      {/* SEO Component for search engines and social media */}
+      <ProductSEO product={product} />
+      
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

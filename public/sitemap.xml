@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://karni-exim-new.netlify.app/</loc>
     <lastmod>2025-10-15</lastmod>
@@ -36,5 +37,87 @@
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-  <!-- Product pages would be dynamically generated -->
+  <url>
+    <loc>https://karni-exim-new.netlify.app/product/2n3qkkqpyiGTJ1D2Ltfn</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://firebasestorage.googleapis.com/v0/b/karni-exim.firebasestorage.app/o/products%2F1760513201265_Generated%20Image%20September%2017%2C%202025%20-%2010_55AM.png?alt=media&token=cad924b5-8fee-4e88-81dd-0f20802a9118</image:loc>
+      <image:title>fdfds</image:title>
+      <image:caption>fdsff
+ff
+f
+f
+f
+f
+f
+f
+f
+f
+f😘</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/product/BiX66IOFNoLBo9AbcGAe</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://firebasestorage.googleapis.com/v0/b/karni-exim.firebasestorage.app/o/products%2F1760256216038_Guar%20Gum.png?alt=media&token=4d65afa6-fb02-4e00-87c8-673434feb3e9</image:loc>
+      <image:title>Premium Rajasthan Guar Gum Powder (Cyamopsis tetragonoloba)</image:title>
+      <image:caption>📝 PRODUCT DESCRIPTION
+Guar Gum, also known as Guaran or scientifically Cyamopsis tetragonoloba, is </image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/product/Jkxp10PBxlbo8pf8vNmQ</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://firebasestorage.googleapis.com/v0/b/karni-exim.firebasestorage.app/o/products%2F1760177945279_da54cafa-9f07-478e-b20d-73663b257f8b_20250528_192518_0000.png?alt=media&token=f03d797b-7a52-4c95-9711-6a1b4e256f92</image:loc>
+      <image:title>DFSD</image:title>
+      <image:caption>SDFDS</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/product/eHxIKuysk3ri1uubEZZp</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://firebasestorage.googleapis.com/v0/b/karni-exim.firebasestorage.app/o/products%2F1760004203929_IMG_20250501_173610_405.webp?alt=media&token=cb174130-3e37-4e04-b5a1-381faf0fed2b</image:loc>
+      <image:title>Copper Bottle</image:title>
+      <image:caption>kaljdklajs</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/product/jv2XxPAdHeZYpDxZAhxs</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://firebasestorage.googleapis.com/v0/b/karni-exim.firebasestorage.app/o/products%2F1760346251073_Tulsi%20Capsules%20on%20Neutral%20Background.png?alt=media&token=605585e2-cca1-4ffa-b344-c3ac1ced4fd0</image:loc>
+      <image:title>None</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/products?category=Hero</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/products?category=Guar%20Gum</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://karni-exim-new.netlify.app/products?category=Copper%20Utensils</loc>
+    <lastmod>2025-10-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

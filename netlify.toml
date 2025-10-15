@@ -7,6 +7,10 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Enable prerendering for better SEO (Netlify automatically prerenders for bots)
+[[plugins]]
+  package = "@netlify/plugin-sitemap"
+
 # Handle SPA routing
 [[redirects]]
   from = "/*"
