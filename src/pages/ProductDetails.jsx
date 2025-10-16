@@ -141,32 +141,11 @@ Thanks & Regards,
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            {/* MOBILE IMAGE - Single image (Hidden on Desktop) */}
-            <div className="md:hidden w-full">
-              {images.length > 0 ? (
-                <figure className="aspect-square bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
-                  <img
-                    src={images[0]}
-                    alt={`${product.name}`}
-                    className="w-full h-full object-contain bg-gray-50"
-                    loading="eager"
-                    decoding="async"
-                    fetchPriority="high"
-                    itemProp="image"
-                  />
-                </figure>
-              ) : (
-                <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                  <p className="text-gray-500">No images available</p>
-                </div>
-              )}
-            </div>
-
-            {/* DESKTOP GALLERY WITH THUMBNAIL (Hidden on Mobile) */}
-            <div className="hidden md:flex gap-4">
+            {/* IMAGE GALLERY - Same for Mobile & Desktop */}
+            <div className="flex gap-4">
               {/* Thumbnail Gallery - Left Side */}
               {images.length > 1 && (
-                <div className="flex flex-col gap-2 w-20">
+                <div className="flex flex-col gap-2 w-16 sm:w-20">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
