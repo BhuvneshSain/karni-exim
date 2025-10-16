@@ -7,9 +7,6 @@ import './theme.css'; // Import our theme variables
 import './design-system.css'; // Import our design system
 import './components/FooterFix.css'; // Import footer positioning fix
 
-// Import image optimization utilities (will auto-setup on import)
-import './utils/optimizeImages.js';
-
 // Add performance monitoring in development
 if (import.meta.env.DEV) {
   console.log('Karni Exim running in development mode');

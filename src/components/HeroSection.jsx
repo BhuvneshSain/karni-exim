@@ -7,58 +7,73 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import './HeroSection.css'; // Import custom styles
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore/lite';
+import { collection, getDocs } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 import LoadingSpinner from './LoadingSpinner';
 import { getOptimizedImageUrl, getImagePlaceholder } from '../utils/imageOptimizer';
 import ProgressiveImage from './ProgressiveImage';
 
 const HeroSection = () => {
-  const [heroProducts, setHeroProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [heroImages, setHeroImages] = useState([]);
+  const [loading, setLoading] = useState(false); // Changed to false - show fallback immediately
   const navigate = useNavigate();
   
   // Memoize the navigation function to prevent unnecessary re-renders
-  const handleNavigation = useCallback((productId) => {
-    navigate(`/product/${productId}`);
+  const handleNavigation = useCallback(() => {
+    navigate('/products');
   }, [navigate]);
+  
   useEffect(() => {
-    const fetchHeroProducts = async () => {
+    const fetchHeroImages = async () => {
       try {
-        const q = query(
-          collection(db, "products"),
-          where("isHero", "==", true)
-        );
-        const querySnapshot = await getDocs(q);
+        // Check sessionStorage cache first
+        const cachedHeroImages = sessionStorage.getItem('heroImages');
+        const cacheTimestamp = sessionStorage.getItem('heroImagesTimestamp');
+        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
         
-        const products = querySnapshot.docs.map(doc => ({
+        // Use cached data if available and fresh
+        if (cachedHeroImages && cacheTimestamp) {
+          const age = Date.now() - parseInt(cacheTimestamp);
+          if (age < CACHE_DURATION) {
+            console.log('✅ Using cached hero images');
+            setHeroImages(JSON.parse(cachedHeroImages));
+            return;
+          }
+        }
+        
+        // Fetch from Firebase if no cache or expired
+        console.log('🔥 Fetching hero images from Firebase...');
+        const querySnapshot = await getDocs(collection(db, "heroes"));
+        
+        const heroes = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         
-        console.log('Hero products fetched:', products);
-        setHeroProducts(products);
+        console.log('✅ Hero banners fetched:', heroes.length);
+        setHeroImages(heroes);
+        
+        // Cache the results
+        sessionStorage.setItem('heroImages', JSON.stringify(heroes));
+        sessionStorage.setItem('heroImagesTimestamp', Date.now().toString());
+        
       } catch (error) {
-        console.error("Error fetching hero products:", error);
+        console.error("Error fetching hero images:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHeroProducts();
+    fetchHeroImages();
   }, []);
-  if (loading) {
+  
+  // Always show fallback hero immediately (no loading spinner)
+  // Hero images will load in background and update when ready
+  
+  if (heroImages.length === 0) {
+    // Fallback hero section - shows immediately while hero images load      
     return (
-      <div className="w-full h-96 bg-beige flex items-center justify-center mt-4">
-        <LoadingSpinner text="Loading hero content..." />
-      </div>
-    );
-  }
-
-  if (heroProducts.length === 0) {
-    // Fallback hero section with just a plain image/gradient      
-    return (
-      <section className="relative h-[70vh] md:h-[80vh] bg-gradient-to-br from-charcoal to-charcoal-light rounded-xl md:rounded-2xl overflow-hidden mx-4 mt-4">
+      <section className="relative h-[70vh] md:h-[80vh] bg-gradient-to-br from-charcoal to-charcoal-light rounded-xl md:rounded-2xl overflow-hidden mx-4 mt-4 cursor-pointer" onClick={handleNavigation}>
         <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10"></div>
         <div className="absolute inset-0 flex items-center justify-center flex-col text-white px-4">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 text-center">
@@ -91,44 +106,39 @@ const HeroSection = () => {
           disableOnInteraction: false,
           pauseOnMouseEnter: true 
         }}
-        loop={heroProducts.length > 1}
+        loop={heroImages.length > 1}
         speed={800}        className="w-full h-[60vh] sm:h-[70vh] md:h-[80vh] hero-swiper karni-hero rounded-hero"
         grabCursor={true}
       >
-        {heroProducts.map((product) => (
-          <SwiperSlide 
-            key={product.id} 
-            className="relative"
-            onClick={() => handleNavigation(product.id)}
-          >
-            <div className="h-full w-full bg-beige relative">
-              {/* Progressive image with high priority for LCP */}
-              <ProgressiveImage
-                src={getOptimizedImageUrl(product.heroImage || product.mainImage, { type: 'hero' })}
-                className="w-full h-full object-cover"
-                loading="eager"
-                fetchPriority="high"
-                alt={product.name || 'Product image'}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = getImagePlaceholder('hero');
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-charcoal/40 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3 lg:w-1/2 text-white">
-                <h2 className="text-3xl md:text-5xl font-bold mb-3 drop-shadow-xl">
-                  {product.name}
-                </h2>
-                <p className="text-lg md:text-xl mb-6 drop-shadow-lg">
-                  {product.description?.substring(0, 100)}
-                  {product.description?.length > 100 ? '...' : ''}
-                </p>
-                <button className="bg-saffron text-charcoal px-6 py-2 rounded font-medium hover:bg-opacity-90 transition-all">
-                  View Details
-                </button>
+        {heroImages.map((hero) => (
+          hero.image && (
+            <SwiperSlide 
+              key={hero.id} 
+              className="relative cursor-pointer"
+              onClick={handleNavigation}
+            >
+              <div className="h-full w-full bg-beige relative">
+                {/* Progressive image with high priority for LCP */}
+                <ProgressiveImage
+                  src={getOptimizedImageUrl(hero.image, { type: 'hero' })}
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                  fetchPriority="high"
+                  alt="Hero Banner"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = getImagePlaceholder('hero');
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-charcoal/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full md:w-2/3 lg:w-1/2 text-white">
+                  <button className="bg-saffron text-charcoal px-6 py-2 rounded font-medium hover:bg-opacity-90 transition-all">
+                    View All Products
+                  </button>
+                </div>
               </div>
-            </div>
-          </SwiperSlide>
+            </SwiperSlide>
+          )
         ))}
       </Swiper>
     </section>

@@ -1,40 +1,26 @@
-import { useState } from 'react';
+import PropTypes from 'prop-types';
 
-const Tooltip = ({ children, text, position = 'top' }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  
-  // Position styling
-  const positionStyles = {
-    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
-    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
-    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2'
-  };
-  
-  // Arrow position styling
-  const arrowStyles = {
-    top: 'top-full left-1/2 transform -translate-x-1/2 border-t-gray-800',
-    bottom: 'bottom-full left-1/2 transform -translate-x-1/2 border-b-gray-800',
-    left: 'left-full top-1/2 transform -translate-y-1/2 border-l-gray-800',
-    right: 'right-full top-1/2 transform -translate-y-1/2 border-r-gray-800'
-  };
-
+/**
+ * Simple Tooltip component
+ * Displays text with a tooltip on hover
+ */
+const Tooltip = ({ text, children }) => {
   return (
-    <div 
-      className="relative flex items-center group"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-    >
+    <div className="relative inline-block group">
       {children}
-      
-      {isVisible && (
-        <div className={`absolute z-50 w-64 px-3 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg shadow-sm ${positionStyles[position]}`}>
+      {text && (
+        <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-charcoal-dark rounded shadow-lg whitespace-nowrap z-10 transition-opacity opacity-0 group-hover:opacity-100">
           {text}
-          <div className={`absolute w-0 h-0 border-4 border-transparent ${arrowStyles[position]}`}></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-charcoal-dark"></div>
         </div>
       )}
     </div>
   );
+};
+
+Tooltip.propTypes = {
+  text: PropTypes.string,
+  children: PropTypes.node.isRequired,
 };
 
 export default Tooltip;

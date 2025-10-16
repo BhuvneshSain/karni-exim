@@ -2,22 +2,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
 import { db } from '../firebase';
-import Slider from 'react-slick';
 import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductSEO from '../components/ProductSEO';
 import { generateProductSchema, setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
 import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import './ProductDetails.css'; // Import custom styles
 
 const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const navigate = useNavigate();
   useEffect(() => {
     // Set canonical URL for SEO
@@ -98,31 +95,9 @@ const ProductDetails = () => {
     </div>
   );
 
-  const images = [product.mainImage, ...(product.otherImages || [])].filter(Boolean);
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: true,
-    autoplay: true,
-    autoplaySpeed: 5000,
-    pauseOnHover: true,
-    adaptiveHeight: false,
-    lazyLoad: 'ondemand',
-    cssEase: 'linear',
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          arrows: false,
-          dots: true
-        }
-      }
-    ]
-  };
- const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
+  const images = [product.mainImage, ...(product.otherImages || product.images?.slice(1) || [])].filter(Boolean);
+
+  const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
   `👋 Hello Karni Exim Team,
 
 I'm interested in the following product:
@@ -159,45 +134,101 @@ Thanks & Regards,
         </nav>
 
         <section className="flex flex-col md:grid md:grid-cols-2 gap-8 mt-6">
-          {/* Product Image Gallery - Sticky on desktop, full width on mobile */}
+          {/* Product Image Gallery - Amazon Style */}
           <motion.div 
-            className="w-full md:sticky md:top-20 md:self-start md:max-h-[calc(100vh-8rem)]"
+            className="w-full md:sticky md:top-20 md:self-start"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <figure className="w-full aspect-square bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 product-slider">
-              {images.length > 0 ? (
-                <Slider {...settings}>
+            <div className="flex gap-4">
+              {/* Thumbnail Gallery - Left Side */}
+              {images.length > 1 && (
+                <div className="flex flex-col gap-2 w-16 sm:w-20">
                   {images.map((img, idx) => (
-                    <div key={idx} className="relative w-full pb-[100%] bg-gray-100">
-                      {/* Loading skeleton */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
-                      
-                      {/* Actual image */}
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      className={`
+                        relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200
+                        ${selectedImageIndex === idx 
+                          ? 'border-saffron shadow-md' 
+                          : 'border-gray-200 hover:border-gray-300'
+                        }
+                      `}
+                    >
                       <img
                         src={img}
-                        alt={`${product.name} - View ${idx + 1}`}
-                        className="absolute inset-0 w-full h-full object-contain p-2 sm:p-4 z-10"
-                        loading={idx === 0 ? "eager" : "lazy"}
-                        decoding="async"
-                        fetchpriority={idx === 0 ? "high" : "auto"}
-                        itemProp={idx === 0 ? "image" : undefined}
-                        onLoad={(e) => {
-                          // Hide skeleton when image loads
-                          const skeleton = e.target.previousElementSibling;
-                          if (skeleton) skeleton.style.display = 'none';
-                        }}
+                        alt={`${product.name} thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
                       />
-                    </div>
+                      {selectedImageIndex === idx && (
+                        <div className="absolute inset-0 bg-saffron/10 pointer-events-none"></div>
+                      )}
+                    </button>
                   ))}
-                </Slider>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">No images available</p>
                 </div>
               )}
-            </figure>
+
+              {/* Main Image Display */}
+              <figure className="flex-1 aspect-square bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100">
+                {images.length > 0 ? (
+                  <div className="relative w-full h-full bg-gray-50">
+                    <img
+                      src={images[selectedImageIndex]}
+                      alt={`${product.name} - View ${selectedImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                      loading="eager"
+                      decoding="async"
+                      fetchpriority="high"
+                      itemProp="image"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">No images available</p>
+                  </div>
+                )}
+              </figure>
+            </div>
+
+            {/* Image Counter */}
+            {images.length > 1 && (
+              <div className="mt-2 text-center text-sm text-gray-500">
+                Image {selectedImageIndex + 1} of {images.length}
+              </div>
+            )}
+
+            {/* CTA Buttons Below Images */}
+            <section className="flex flex-col sm:flex-row gap-3 mt-6" aria-label="Contact and inquiry options">
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full text-center bg-charcoal hover:bg-charcoal-dark text-white font-semibold px-5 py-3 rounded shadow transition flex items-center justify-center gap-2 touch-manipulation"
+                aria-label="Get quote on WhatsApp"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Get Quote on WhatsApp
+              </motion.a>
+              
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                href={`mailto:info@karniexim.com?subject=Inquiry about ${product.name}&body=Hello Karni Exim Team,%0D%0A%0D%0AI'm interested in the following product:%0D%0A%0D%0AProduct: ${product.name}%0D%0ACategory: ${product.category}%0D%0A%0D%0APlease provide a quote or more details.%0D%0A%0D%0AThanks & Regards`}
+                className="w-full text-center border-2 border-saffron text-charcoal-dark hover:bg-saffron/10 font-semibold px-5 py-3 rounded shadow-sm transition flex items-center justify-center gap-2 touch-manipulation"
+                aria-label="Send email inquiry"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Email Inquiry
+              </motion.a>
+            </section>
           </motion.div>
 
           {/* Product Information */}
@@ -247,36 +278,6 @@ Thanks & Regards,
             ) : (
               <meta itemProp="availability" content="https://schema.org/InStock" />
             )}
-
-            <section className="flex flex-col sm:flex-row gap-4 mt-4 pt-4 border-t border-saffron/20" aria-label="Contact and inquiry options">
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto text-center bg-charcoal hover:bg-charcoal-dark text-white font-semibold px-5 py-3 rounded shadow transition flex items-center justify-center gap-2 touch-manipulation"
-                aria-label="Get quote on WhatsApp"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                </svg>
-                Get Quote on WhatsApp
-              </motion.a>
-              
-              <motion.a
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                href={`mailto:info@karniexim.com?subject=Inquiry about ${product.name}&body=Hello Karni Exim Team,%0D%0A%0D%0AI'm interested in the following product:%0D%0A%0D%0AProduct: ${product.name}%0D%0ACategory: ${product.category}%0D%0A%0D%0APlease provide a quote or more details.%0D%0A%0D%0AThanks & Regards`}
-                className="w-full sm:w-auto text-center border-2 border-saffron text-charcoal-dark hover:bg-saffron/10 font-semibold px-5 py-3 rounded shadow-sm transition flex items-center justify-center gap-2 touch-manipulation"
-                aria-label="Send email inquiry"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Email Inquiry
-              </motion.a>
-            </section>
             
             {/* Social Sharing Section */}
             <aside className="mt-6 pt-4 border-t border-saffron/20" aria-label="Share this product">

@@ -11,98 +11,142 @@ import {
 } from 'firebase/firestore/lite';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import useProducts from '../hooks/useProducts';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { validateImageDimensions, compressImage, needsCompression } from '../utils/imageOptimizer';
 import LoadingSpinner from './LoadingSpinner';
 import Tooltip from './Tooltip';
-import { getImageSizeRecommendation, formatImageRecommendation } from '../utils/imageSizeRecommendations';
+import { 
+  FaImage, FaInfoCircle, FaCog, FaTrash,
+  FaCopy, FaCheckCircle, FaTimesCircle, FaPlus, FaBoxOpen 
+} from 'react-icons/fa';
+import DOMPurify from 'dompurify';
+
+const ALLOWED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const REQUIRED_IMAGES = 5;
+const REQUIRED_IMAGE_WIDTH = 800;
+const REQUIRED_IMAGE_HEIGHT = 800;
 
 const ProductForm = () => {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [mainImage, setMainImage] = useState(null);
-  const [heroImage, setHeroImage] = useState(null);
-  const [previewMainImage, setPreviewMainImage] = useState(null);
-  const [previewHeroImage, setPreviewHeroImage] = useState(null);
-  const [otherImages, setOtherImages] = useState([]);
-  const [previewOtherImages, setPreviewOtherImages] = useState([]);
+  const [productImages, setProductImages] = useState(Array(REQUIRED_IMAGES).fill(null));
+  const [previewImages, setPreviewImages] = useState(Array(REQUIRED_IMAGES).fill(null));
   const [isBestSeller, setIsBestSeller] = useState(false);
-  const [isHero, setIsHero] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [editProductId, setEditProductId] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const { products, loading } = useProducts();
   const categories = Array.from(new Set(products.map(p => p.category)));
 
-  // Effect to handle image previews
+  // Generate image previews
   useEffect(() => {
-    if (mainImage) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewMainImage(reader.result);
-      };
-      reader.readAsDataURL(mainImage);
-    } else {
-      setPreviewMainImage(null);
-    }
+    const newPreviews = [...previewImages];
+    let completed = 0;
 
-    if (heroImage) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewHeroImage(reader.result);
-      };
-      reader.readAsDataURL(heroImage);
-    } else {
-      setPreviewHeroImage(null);
-    }
-
-    // Preview for multiple other images
-    if (otherImages.length > 0) {
-      const previewUrls = [];
-      Array.from(otherImages).forEach(file => {
+    productImages.forEach((file, index) => {
+      if (file instanceof File) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          previewUrls.push(reader.result);
-          if (previewUrls.length === otherImages.length) {
-            setPreviewOtherImages(previewUrls);
+          newPreviews[index] = reader.result;
+          completed++;
+          if (completed === productImages.filter(f => f instanceof File).length) {
+            setPreviewImages(newPreviews);
           }
         };
         reader.readAsDataURL(file);
-      });
-    } else {
-      setPreviewOtherImages([]);
-    }
-  }, [mainImage, heroImage, otherImages]);
-
-  useEffect(() => {
-    // When editing product, fetch existing image URLs
-    const fetchExistingProduct = async () => {
-      if (editProductId) {
-        try {
-          const productDoc = await getDoc(doc(db, "products", editProductId));
-          if (productDoc.exists()) {
-            const productData = productDoc.data();
-            if (productData.mainImage) {
-              setPreviewMainImage(productData.mainImage);
-            }
-            if (productData.heroImage) {
-              setPreviewHeroImage(productData.heroImage);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching product details:", error);
-        }
+      } else if (typeof file === 'string') {
+        // Existing URL from editing
+        newPreviews[index] = file;
+      } else {
+        newPreviews[index] = null;
       }
-    };
+    });
 
-    if (editProductId) {
-      fetchExistingProduct();
+    if (productImages.every(f => !f || typeof f === 'string')) {
+      setPreviewImages(newPreviews);
     }
-  }, [editProductId]);
+  }, [productImages]);
 
+  // Validate image file
+  const validateImageFile = (file) => {
+    if (!ALLOWED_IMAGE_FORMATS.includes(file.type)) {
+      return `Invalid file format. Only JPG, PNG, and WebP are allowed.`;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return `File size too large. Maximum size is 5MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`;
+    }
+    return null;
+  };
+
+  // Validate image dimensions
+  const validateImageDimensions = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          if (img.width === REQUIRED_IMAGE_WIDTH && img.height === REQUIRED_IMAGE_HEIGHT) {
+            resolve(true);
+          } else {
+            reject(
+              `Image dimensions must be exactly ${REQUIRED_IMAGE_WIDTH}x${REQUIRED_IMAGE_HEIGHT} pixels. ` +
+              `Your image is ${img.width}x${img.height} pixels.`
+            );
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle image upload for specific slot
+  const handleImageUpload = (index, file) => {
+    if (!file) return;
+
+    const error = validateImageFile(file);
+    if (error) {
+      setValidationErrors(prev => ({ ...prev, [`image_${index}`]: error }));
+      return;
+    }
+
+    // Validate dimensions
+    validateImageDimensions(file)
+      .then(() => {
+        const newImages = [...productImages];
+        newImages[index] = file;
+        setProductImages(newImages);
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`image_${index}`];
+          return newErrors;
+        });
+      })
+      .catch(error => {
+        setValidationErrors(prev => ({ ...prev, [`image_${index}`]: error }));
+      });
+  };
+
+  // Handle image removal
+  const handleImageRemove = (index) => {
+    const newImages = [...productImages];
+    newImages[index] = null;
+    setProductImages(newImages);
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[`image_${index}`];
+      return newErrors;
+    });
+  };
+
+  // Validate form
   const validateForm = async () => {
     const errors = {};
     
@@ -115,460 +159,498 @@ const ProductForm = () => {
     } else if (category === 'custom' && !customCategory.trim()) {
       errors.customCategory = "Custom category name is required";
     }
-    
-    if (!mainImage && !editProductId && !previewMainImage) {
-      errors.mainImage = "Main image is required";
+
+    if (!description.trim()) {
+      errors.description = "Description is required";
     }
     
-    if (isHero && !heroImage && !editProductId && !previewHeroImage) {
-      errors.heroImage = "Hero image is required when 'Show in Hero Banner' is selected";
-    }
-    
-    // Check hero image dimensions if a new image is being uploaded
-    if (isHero && heroImage) {
-      try {
-        const dimensions = await validateImageDimensions(heroImage, 1200, 800);
-        if (!dimensions.isValid) {
-          errors.heroImage = `Image too small. Hero images should be at least 1200x800 pixels. Your image is ${dimensions.width}x${dimensions.height}.`;
-        }
-        if (dimensions.aspectRatio < 1.3) {
-          errors.heroImage = "Image should have a landscape orientation for best display in the hero banner.";
-        }
-      } catch (error) {
-        console.error("Error validating image dimensions:", error);
-        errors.heroImage = "Failed to validate image dimensions. Please try a different image.";
-      }
+    // Check if all 5 images are uploaded
+    const uploadedImages = productImages.filter(img => img !== null);
+    if (uploadedImages.length !== REQUIRED_IMAGES && !editProductId) {
+      errors.images = `All ${REQUIRED_IMAGES} product images are required`;
     }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
+  // Upload image with retry mechanism
+  const uploadImageWithRetry = async (file, path, maxRetries = 3) => {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const processedFile = needsCompression(file) 
+          ? await compressImage(file) 
+          : file;
+        
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, processedFile);
+        const url = await getDownloadURL(storageRef);
+        return url;
+      } catch (error) {
+        if (attempt === maxRetries - 1) throw error;
+        console.log(`Upload attempt ${attempt + 1} failed, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
     
     // Form validation
-    if (!(await validateForm())) {
+    const isValid = await validateForm();
+    if (!isValid) {
+      setErrorMessage("Please fix the errors before submitting");
       return;
     }
-    
+
     setSubmitting(true);
+    setUploadProgress(0);
 
     try {
-      let mainImageUrl = previewMainImage;
-      if (mainImage) {
-        // Compress image before upload if needed
-        const imageToUpload = needsCompression(mainImage) 
-          ? await compressImage(mainImage, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 })
-          : mainImage;
-          
-        const mainRef = ref(storage, `products/${Date.now()}_${imageToUpload.name}`);
-        await uploadBytes(mainRef, imageToUpload);
-        mainImageUrl = await getDownloadURL(mainRef);
-      }
+      // Sanitize inputs
+      const sanitizedName = sanitizeInput(name);
+      const sanitizedDescription = sanitizeInput(description);
+      const finalCategory = category === 'custom' ? sanitizeInput(customCategory) : category;
 
-      let heroImageUrl = previewHeroImage;
-      if (heroImage && isHero) {
-        // Compress hero image before upload
-        const imageToUpload = needsCompression(heroImage)
-          ? await compressImage(heroImage, { maxWidth: 2400, maxHeight: 1600, quality: 0.85 })
-          : heroImage;
-          
-        const heroRef = ref(storage, `products/hero_${Date.now()}_${imageToUpload.name}`);
-        await uploadBytes(heroRef, imageToUpload);
-        heroImageUrl = await getDownloadURL(heroRef);
-        console.log("Hero image uploaded:", heroImageUrl); // Debug log
-      }
+      // Upload images
+      const imageUrls = [];
+      const totalImages = productImages.filter(img => img instanceof File).length;
+      let uploadedCount = 0;
 
-      const otherImageUrls = [];
-      for (let file of otherImages) {
-        // Compress each additional image
-        const imageToUpload = needsCompression(file)
-          ? await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 })
-          : file;
+      for (let i = 0; i < productImages.length; i++) {
+        const img = productImages[i];
+        
+        if (img instanceof File) {
+          const timestamp = Date.now();
+          const imagePath = `products/${sanitizedName.replace(/\s+/g, '_')}_${timestamp}_${i}.${img.type.split('/')[1]}`;
+          const url = await uploadImageWithRetry(img, imagePath);
+          imageUrls.push(url);
           
-        const fileRef = ref(storage, `products/${Date.now()}_${imageToUpload.name}`);
-        await uploadBytes(fileRef, imageToUpload);
-        const url = await getDownloadURL(fileRef);
-        otherImageUrls.push(url);
+          uploadedCount++;
+          setUploadProgress(Math.round((uploadedCount / totalImages) * 100));
+        } else if (typeof img === 'string') {
+          // Existing URL from editing
+          imageUrls.push(img);
+        }
       }
 
       const productData = {
-        name,
-        category: category === 'custom' ? customCategory : category,
-        description,
+        name: sanitizedName,
+        category: finalCategory,
+        description: sanitizedDescription,
+        images: imageUrls,
+        mainImage: imageUrls[0] || '', 
+        otherImages: imageUrls.slice(1) || [],
         isBestSeller,
-        isHero, // Explicitly set isHero flag
         badges: [],
         updatedAt: Timestamp.now(),
       };
       
-      // Only set createdAt on new products
       if (!editProductId) {
         productData.createdAt = Timestamp.now();
-      }
-
-      if (mainImageUrl) productData.mainImage = mainImageUrl;
-      if (heroImageUrl && isHero) productData.heroImage = heroImageUrl;
-      if (otherImageUrls.length > 0) {
-        // Merge with existing other images if we're editing
-        if (editProductId) {
-          const productDoc = await getDoc(doc(db, "products", editProductId));
-          if (productDoc.exists() && productDoc.data().otherImages) {
-            const existingImages = productDoc.data().otherImages;
-            productData.otherImages = [...existingImages, ...otherImageUrls];
-          } else {
-            productData.otherImages = otherImageUrls;
-          }
-        } else {
-          productData.otherImages = otherImageUrls;
-        }
       }
 
       if (editProductId) {
         const productRef = doc(db, "products", editProductId);
         await updateDoc(productRef, productData);
-        alert("Product updated successfully!");
+        alert("✅ Product updated successfully!");
       } else {
         await addDoc(collection(db, "products"), productData);
-        alert("Product added successfully!");
+        alert("✅ Product added successfully!");
+        // Reload page after successful creation
+        window.location.reload();
       }
 
       // Reset form
-      setName(""); 
-      setCategory(""); 
-      setCustomCategory(""); 
-      setDescription("");
-      setMainImage(null); 
-      setHeroImage(null); 
-      setOtherImages([]); 
-      setPreviewMainImage(null);
-      setPreviewHeroImage(null);
-      setPreviewOtherImages([]);
-      setIsBestSeller(false); 
-      setIsHero(false); 
-      setEditProductId(null);
-      setValidationErrors({});
+      resetForm();
     } catch (err) {
       console.error("Upload error:", err);
-      alert("Failed to upload product. Error: " + err.message);
+      setErrorMessage(`Failed to ${editProductId ? 'update' : 'upload'} product: ${err.message}`);
+      setRetryCount(prev => prev + 1);
     } finally {
       setSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
-  const handleEdit = (product) => {
-    setEditProductId(product.id);
-    setName(product.name);
-    setCategory(product.category);
-    setCustomCategory("");
-    setDescription(product.description);
-    setIsBestSeller(product.isBestSeller || false);
-    setIsHero(product.isHero || false);
-    // Reset file inputs but keep preview URLs
-    setMainImage(null);
-    setHeroImage(null);
-    setOtherImages([]);
-    setPreviewMainImage(product.mainImage);
-    setPreviewHeroImage(product.heroImage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await deleteDoc(doc(db, "products", id));
-        alert("Product deleted successfully!");
-        window.location.reload(); // Refresh the page
-      } catch (err) {
-        console.error("Delete error:", err);
-        alert("Failed to delete product.");
-      }
-    }
-  };
-
-  const handleCancel = () => {
+  // Reset form
+  const resetForm = () => {
     setName(""); 
     setCategory(""); 
     setCustomCategory(""); 
     setDescription("");
-    setMainImage(null); 
-    setHeroImage(null); 
-    setOtherImages([]); 
-    setPreviewMainImage(null);
-    setPreviewHeroImage(null);
-    setPreviewOtherImages([]);
-    setIsBestSeller(false); 
-    setIsHero(false);
+    setProductImages(Array(REQUIRED_IMAGES).fill(null));
+    setPreviewImages(Array(REQUIRED_IMAGES).fill(null));
+    setIsBestSeller(false);
     setEditProductId(null);
     setValidationErrors({});
+    setErrorMessage("");
+    setRetryCount(0);
+  };
+
+  // Handle edit
+  const handleEdit = async (product) => {
+    setEditProductId(product.id);
+    setName(product.name);
+    setCategory(product.category);
+    setDescription(product.description);
+    setIsBestSeller(product.isBestSeller || false);
+    
+    // Load existing images
+    const existingImages = product.images || [];
+    const imageArray = Array(REQUIRED_IMAGES).fill(null);
+    existingImages.forEach((url, index) => {
+      if (index < REQUIRED_IMAGES) {
+        imageArray[index] = url;
+      }
+    });
+    setProductImages(imageArray);
+    setPreviewImages(imageArray);
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle duplicate
+  const handleDuplicate = (product) => {
+    setName(product.name + " (Copy)");
+    setCategory(product.category);
+    setDescription(product.description);
+    setIsBestSeller(false);
+    setEditProductId(null);
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle delete with better error handling
+  const handleDelete = async (id) => {
+    if (!window.confirm("⚠️ Are you sure you want to delete this product? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await deleteDoc(doc(db, "products", id));
+      alert("✅ Product deleted successfully!");
+      window.location.reload();
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert(`❌ Failed to delete product: ${err.message}`);
+    }
+  };
+
+  // Format date
+  const formatDate = (timestamp) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <header>
-        <h2 className="text-2xl font-bold text-blue-800 mb-6 text-center">
-          {editProductId ? 'Edit Product' : 'Add New Product'}
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Form Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-lg shadow-lg">
+        <h2 className="text-3xl font-bold flex items-center gap-3">
+          {editProductId ? '✏️ Edit Product' : '➕ Add New Product'}
         </h2>
-      </header>
+        <p className="text-white mt-2 opacity-90">
+          {editProductId ? 'Update your product information' : 'Fill in the details to create a new product'}
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md" aria-label={editProductId ? 'Edit product form' : 'Add new product form'}>
-        <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-0 p-0 m-0">
-          <legend className="sr-only">Product Basic Information</legend>
-          
-          <div>
-            <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
-              Product Name <span className="text-red-500" aria-label="required">*</span>
-            </label>
-            <input
-              id="product-name"
-              name="name"
-              type="text"
-              placeholder="Product Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`border rounded px-4 py-2 w-full ${validationErrors.name ? 'border-red-500' : 'border-gray-300'}`}
-              aria-required="true"
-              aria-invalid={!!validationErrors.name}
-              aria-describedby={validationErrors.name ? 'name-error' : undefined}
-            />
-            {validationErrors.name && (
-              <p id="name-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.name}</p>
+      {/* Error Message */}
+      <AnimatePresence>
+        {errorMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-red-50 border-l-4 border-red-500 p-4 mt-4 rounded"
+          >
+            <div className="flex items-center gap-2">
+              <FaTimesCircle className="text-red-500" />
+              <p className="text-red-700 font-medium">{errorMessage}</p>
+            </div>
+            {retryCount > 0 && (
+              <button
+                onClick={() => handleSubmit({ preventDefault: () => {} })}
+                className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Retry Upload
+              </button>
             )}
-          </div>
-
-          <div>
-            <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">
-              Category <span className="text-red-500" aria-label="required">*</span>
-            </label>
-            <select
-              id="product-category"
-              name="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={`border rounded px-4 py-2 w-full ${validationErrors.category ? 'border-red-500' : 'border-gray-300'}`}
-              aria-required="true"
-              aria-invalid={!!validationErrors.category}
-              aria-describedby={validationErrors.category ? 'category-error' : undefined}
-            >
-              <option value="">-- Select Category --</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-              <option value="custom">Other (type below)</option>
-            </select>
-            {validationErrors.category && (
-              <p id="category-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.category}</p>
-            )}
-          </div>
-        </fieldset>
-
-        {category === 'custom' && (
-          <div>
-            <label htmlFor="custom-category" className="block text-sm font-medium text-gray-700 mb-1">
-              Custom Category <span className="text-red-500" aria-label="required">*</span>
-            </label>
-            <input
-              id="custom-category"
-              name="customCategory"
-              type="text"
-              placeholder="New Category"
-              value={customCategory}
-              onChange={(e) => setCustomCategory(e.target.value)}
-              className={`border rounded px-4 py-2 w-full ${validationErrors.customCategory ? 'border-red-500' : 'border-gray-300'}`}
-              aria-required="true"
-              aria-invalid={!!validationErrors.customCategory}
-              aria-describedby={validationErrors.customCategory ? 'custom-category-error' : undefined}
-            />
-            {validationErrors.customCategory && (
-              <p id="custom-category-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.customCategory}</p>
-            )}
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        <div>
-          <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
-            id="product-description"
-            name="description"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="border border-gray-300 rounded px-4 py-2 w-full"
-            rows="4"
-            aria-describedby="description-help"
-          />
-          <p id="description-help" className="text-xs text-gray-500 mt-1">Provide a detailed description of the product</p>
+      <form onSubmit={handleSubmit} className="">
+        {/* SECTION 1: Basic Information */}
+        <div className="">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FaInfoCircle className="text-blue-600 text-xl" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Basic Information</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="product-name" className="block text-sm font-semibold text-gray-900 mb-2">
+                Product Name <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="product-name"
+                type="text"
+                placeholder="Enter product name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`w-full px-4 py-3 border-2 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                  validationErrors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              {validationErrors.name && (
+                <p className="text-red-600 text-sm mt-1 flex items-center gap-1 font-medium">
+                  <FaTimesCircle /> {validationErrors.name}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="product-category" className="block text-sm font-semibold text-gray-900 mb-2">
+                Category <span className="text-red-600">*</span>
+              </label>
+              <select
+                id="product-category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={`w-full px-4 py-3 border-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ${
+                  validationErrors.category ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+                <option value="custom">+ Add Custom Category</option>
+              </select>
+              {validationErrors.category && (
+                <p className="text-red-600 text-sm mt-1 flex items-center gap-1 font-medium">
+                  <FaTimesCircle /> {validationErrors.category}
+                </p>
+              )}
+            </div>
+
+            {category === 'custom' && (
+              <div className="md:col-span-2">
+                <label htmlFor="custom-category" className="block text-sm font-semibold text-gray-900 mb-2">
+                  Custom Category Name <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="custom-category"
+                  type="text"
+                  placeholder="Enter custom category"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className={`w-full px-4 py-3 border-2 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    validationErrors.customCategory ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {validationErrors.customCategory && (
+                  <p className="text-red-600 text-sm mt-1 font-medium">{validationErrors.customCategory}</p>
+                )}
+              </div>
+            )}
+
+            <div className="md:col-span-2">
+              <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+                Description <span className="text-red-600">*</span>
+              </label>
+              <textarea
+                id="description"
+                placeholder="Enter product description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows="4"
+                className={`w-full px-4 py-3 border-2 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                  validationErrors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <div className="flex justify-between items-center mt-1">
+                {validationErrors.description && (
+                  <p className="text-red-600 text-sm font-medium">{validationErrors.description}</p>
+                )}
+                <p className="text-sm text-gray-600 ml-auto font-medium">{description.length} characters</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-6 border-0 p-0 m-0">
-          <legend className="sr-only">Product Images</legend>          {/* Main Image Upload */}
-          <div className="space-y-2">
+        {/* SECTION 2: Product Images */}
+        <div className="">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <label htmlFor="main-image" className="block text-sm font-medium text-gray-700">
-                Main Product Image <span className="text-red-500" aria-label="required">*</span>
-              </label>
-              <Tooltip text={getImageSizeRecommendation('main').description}>
-                <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
-              </Tooltip>
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FaImage className="text-blue-600 text-xl" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">Product Images</h3>
             </div>
-            <input
-              id="main-image"
-              name="mainImage"
-              type="file"
-              onChange={(e) => setMainImage(e.target.files[0])}
-              className={`w-full border px-3 py-2 rounded ${validationErrors.mainImage ? 'border-red-500' : 'border-gray-300'}`}
-              accept="image/*"
-              aria-required="true"
-              aria-invalid={!!validationErrors.mainImage}
-              aria-describedby="main-image-help main-image-error"
-            />
-            <p id="main-image-help" className="text-xs text-blue-600 mt-1">
-              Recommended size: {formatImageRecommendation('main')}
+            <span className="text-sm font-bold px-4 py-2 bg-blue-600 text-white rounded-full shadow-md">
+              {productImages.filter(img => img !== null).length} / {REQUIRED_IMAGES} uploaded
+            </span>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border-2 border-blue-200 mb-4">
+            <p className="text-sm text-gray-900 font-medium mb-2">
+              📸 <strong>Upload exactly {REQUIRED_IMAGES} images</strong> for this product in order. Upload them from #1 to #5 sequentially.
             </p>
-            {validationErrors.mainImage && (
-              <p id="main-image-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.mainImage}</p>
-            )}
-            {previewMainImage && (
-              <figure className="mt-2">
-                <figcaption className="text-sm text-gray-600 mb-1">Preview:</figcaption>
-                <div className="w-full h-40 bg-gray-100 rounded overflow-hidden">
-                  <img src={previewMainImage} alt="Product preview" className="w-full h-full object-contain" />
-                </div>
-              </figure>
-            )}
+            <p className="text-sm text-gray-900 font-medium mb-2">
+              ⭐ <strong>The first image (#1) will be used as the main product image.</strong>
+            </p>
+            <p className="text-sm text-gray-700">
+              <strong>Accepted formats:</strong> JPG, PNG, WebP | <strong>Max size:</strong> 5MB per image
+            </p>
           </div>
 
-          {/* Hero Image Upload */}
-          <div className={`space-y-2 ${isHero ? '' : 'opacity-60'}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <label htmlFor="hero-image" className="block text-sm font-medium text-gray-700">Hero Banner Image</label>
-                <Tooltip text={getImageSizeRecommendation('hero').description}>
-                  <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
-                </Tooltip>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isHero"
-                  name="isHero"
-                  checked={isHero}
-                  onChange={(e) => setIsHero(e.target.checked)}
-                  className="mr-2 h-4 w-4"
-                  aria-describedby="hero-checkbox-help"
-                />
-                <label htmlFor="isHero" className="text-sm font-medium text-gray-700">Show in Hero Banner</label>
-              </div>
+          {validationErrors.images && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded">
+              <p className="text-red-700 text-sm font-medium flex items-center gap-2">
+                <FaTimesCircle /> {validationErrors.images}
+              </p>
             </div>
-            <input
-              id="hero-image"
-              name="heroImage"
-              type="file"
-              onChange={(e) => setHeroImage(e.target.files[0])}
-              className={`w-full border px-3 py-2 rounded ${validationErrors.heroImage ? 'border-red-500' : 'border-gray-300'}`}
-              disabled={!isHero}
-              accept="image/*"
-              aria-invalid={!!validationErrors.heroImage}
-              aria-describedby="hero-image-help hero-image-error"
-            />
-            {validationErrors.heroImage && (
-              <p id="hero-image-error" className="text-red-500 text-xs mt-1" role="alert">{validationErrors.heroImage}</p>
-            )}
-            {isHero ? (
-              <p id="hero-image-help" className="text-xs text-blue-600 mt-1">
-                Recommended size: {formatImageRecommendation('hero')}
-              </p>
-            ) : (
-              <p id="hero-checkbox-help" className="text-xs text-amber-600 mt-1">
-                Enable "Show in Hero Banner" to upload a hero image.
-              </p>
-            )}
-            {previewHeroImage && isHero && (
-              <figure className="mt-2">
-                <figcaption className="text-sm text-gray-600 mb-1">Hero Preview:</figcaption>
-                <div className="w-full h-40 bg-gray-100 rounded overflow-hidden">
-                  <img src={previewHeroImage} alt="Hero preview" className="w-full h-full object-cover" />
-                </div>
-              </figure>
-            )}
-          </div>
-        </fieldset>
+          )}
 
-        {/* Other Images */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <label htmlFor="other-images" className="block text-sm font-medium text-gray-700">Additional Images</label>
-            <Tooltip text={getImageSizeRecommendation('additional').description}>
-              <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full text-gray-700 text-xs font-bold cursor-help" role="img" aria-label="Information">?</span>
-            </Tooltip>
-          </div>
-          <input
-            id="other-images"
-            name="otherImages"
-            type="file"
-            multiple
-            onChange={(e) => setOtherImages([...e.target.files])}
-            className="w-full border border-gray-300 px-3 py-2 rounded"
-            accept="image/*"
-            aria-describedby="other-images-help"
-          />
-          <p id="other-images-help" className="text-xs text-blue-600 mt-1">
-            Recommended size: {formatImageRecommendation('additional')} (multiple images allowed)
-          </p>
-          {previewOtherImages.length > 0 && (
-            <div className="mt-2">
-              <p className="text-sm text-gray-600 mb-1">Previews:</p>
-              <div className="grid grid-cols-3 gap-2">
-                {previewOtherImages.map((preview, idx) => (
-                  <div key={idx} className="w-full h-24 bg-gray-100 rounded overflow-hidden">
-                    <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-contain" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {Array.from({ length: REQUIRED_IMAGES }).map((_, index) => (
+              <div key={index} className="relative">
+                <div className={`border-4 rounded-xl p-3 transition-all duration-200 shadow-md ${
+                  previewImages[index] 
+                    ? 'border-green-500 bg-green-50' 
+                    : 'border-dashed border-gray-400 bg-white hover:border-blue-500 hover:shadow-lg'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-gray-900 bg-white px-2 py-1 rounded shadow-sm">
+                      #{index + 1}
+                      {index === 0 && <span className="text-blue-600 ml-1">(Main)</span>}
+                    </span>
+                    {previewImages[index] && (
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded transition shadow-sm"
+                        title="Remove image"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    )}
                   </div>
-                ))}
+
+                  {previewImages[index] ? (
+                    <div className="w-full h-32 bg-white rounded-lg overflow-hidden border-2 border-gray-200">
+                      <img 
+                        src={previewImages[index]} 
+                        alt={`Preview ${index + 1}`} 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <label className="cursor-pointer block">
+                      <div className="w-full h-32 border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center hover:border-blue-600 hover:bg-blue-50 transition-all">
+                        <FaPlus className="text-gray-500 text-3xl mb-2" />
+                        <span className="text-sm text-gray-700 font-medium">Click to upload</span>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={(e) => handleImageUpload(index, e.target.files[0])}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+
+                  {validationErrors[`image_${index}`] && (
+                    <p className="text-red-600 text-xs mt-2 font-medium">{validationErrors[`image_${index}`]}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Upload Progress */}
+          {submitting && uploadProgress > 0 && (
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <span>Uploading images...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
               </div>
             </div>
           )}
         </div>
-        
-        {/* Tags and Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+
+        {/* SECTION 3: Settings */}
+        <div className="">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FaCog className="text-blue-600 text-xl" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900">Settings</h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <label className="flex items-center gap-4 p-5 border-3 border-yellow-300 bg-yellow-50 rounded-xl hover:border-yellow-500 hover:shadow-lg cursor-pointer transition-all">
               <input
                 type="checkbox"
                 checked={isBestSeller}
                 onChange={(e) => setIsBestSeller(e.target.checked)}
-                className="h-4 w-4"
+                className="w-6 h-6 text-yellow-500 rounded focus:ring-2 focus:ring-yellow-500"
               />
-              Mark as Bestseller
+              <div className="flex-1">
+                <span className="font-bold text-gray-900 text-base">⭐ Mark as Bestseller</span>
+                <p className="text-sm text-gray-700 mt-1">Product will show a yellow badge on the store</p>
+              </div>
             </label>
           </div>
         </div>
 
-        {/* Submit/Cancel Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2">
+        {/* Form Actions */}
+        <div className="p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-b-lg flex flex-col sm:flex-row gap-4 justify-end border-t-2 border-gray-300">
           <button
             type="button"
-            onClick={handleCancel}
-            className="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium rounded transition border border-gray-400"
+            onClick={resetForm}
+            className="px-8 py-3 bg-white hover:bg-gray-100 text-gray-900 font-bold rounded-lg transition-all shadow-md hover:shadow-lg border-2 border-gray-300"
           >
-            Cancel
+            ✕ Cancel
           </button>
           <button
             type="submit"
-            className="bg-saffron hover:bg-saffron/90 text-white font-semibold px-6 py-2 rounded shadow-md hover:shadow-lg transition border border-saffron"
             disabled={submitting}
+            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {submitting ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <>
+                <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 {editProductId ? 'Updating...' : 'Adding...'}
-              </span>
+              </>
             ) : (
-              editProductId ? 'Update Product' : 'Add Product'
+              <>
+                <FaCheckCircle />
+                {editProductId ? 'Update Product' : 'Add Product'}
+              </>
             )}
           </button>
         </div>
@@ -581,69 +663,136 @@ const ProductForm = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h3 className="text-xl font-bold mb-4 text-blue-700">Uploaded Products</h3>        {loading ? (
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <FaBoxOpen className="text-blue-600" />
+            Uploaded Products
+            <span className="text-sm font-normal text-gray-500">({products.length})</span>
+          </h3>
+        </div>
+
+        {loading ? (
           <LoadingSpinner text="Loading products..." />
-        ) :(
+        ) : products.length === 0 ? (
+          /* Empty State */
+          <div className="bg-white rounded-lg shadow-md p-12 text-center">
+            <div className="w-32 h-32 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
+              <FaBoxOpen className="text-6xl text-blue-300" />
+            </div>
+            <h4 className="text-2xl font-bold text-gray-800 mb-2">No Products Yet</h4>
+            <p className="text-gray-600 mb-6">
+              Get started by adding your first product using the form above.
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
+            >
+              <FaPlus /> Add Your First Product
+            </button>
+          </div>
+        ) : (
           <div className="space-y-4">
-            {products.map((p) => (              <div key={p.id} className="p-4 border rounded shadow-sm bg-white flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="w-20 h-20 flex-shrink-0">
-                  <img src={p.mainImage} alt={p.name} className="w-full h-full object-cover rounded" />
-                </div>
-                <div className="flex-grow">
-                  <h4 className="font-semibold text-lg">{p.name}</h4>
-                  <p className="text-sm text-gray-500">{p.category}</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {p.isBestSeller && (
-                      <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded">
-                        Bestseller
-                      </span>
-                    )}
-                    {p.isHero && (
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                        Hero Banner
-                      </span>
-                    )}
+            {products.map((p) => (
+              <motion.div 
+                key={p.id} 
+                className="bg-white p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Product Image */}
+                  <div className="w-full lg:w-32 h-32 flex-shrink-0">
+                    <img 
+                      src={p.mainImage || p.images?.[0]} 
+                      alt={p.name} 
+                      className="w-full h-full object-cover rounded-lg border border-gray-200" 
+                    />
                   </div>
-                  
-                  {/* Additional Images Preview */}
-                  {p.otherImages && p.otherImages.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-500 mb-1">Additional Images:</p>
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {p.otherImages.slice(0, 5).map((img, idx) => (
-                          <div key={idx} className="w-12 h-12 flex-shrink-0">
-                            <img src={img} alt={`${p.name} ${idx + 1}`} className="w-full h-full object-cover rounded border border-gray-200" />
-                          </div>
-                        ))}
-                        {p.otherImages.length > 5 && (
-                          <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
-                            <span className="text-xs text-gray-500">+{p.otherImages.length - 5}</span>
-                          </div>
+
+                  {/* Product Info */}
+                  <div className="flex-grow">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                      <h4 className="font-bold text-xl text-gray-800">{p.name}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {p.isBestSeller && (
+                          <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full border border-yellow-300">
+                            ⭐ Bestseller
+                          </span>
                         )}
+                        <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full border border-green-300">
+                          ✓ Published
+                        </span>
                       </div>
                     </div>
-                  )}
+
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Category:</strong> {p.category}
+                    </p>
+
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                      {p.description}
+                    </p>
+
+                    {/* Images Preview */}
+                    {p.images && p.images.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-500 mb-2 font-medium">Product Images ({p.images.length}):</p>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {p.images.map((img, idx) => (
+                            <div key={idx} className="w-16 h-16 flex-shrink-0 relative group">
+                              <img 
+                                src={img} 
+                                alt={`${p.name} ${idx + 1}`} 
+                                className="w-full h-full object-cover rounded border border-gray-200" 
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-50 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">#{idx + 1}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Timestamps */}
+                    <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-3">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Created:</span>
+                        <span>{formatDate(p.createdAt)}</span>
+                      </div>
+                      {p.updatedAt && (
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">Updated:</span>
+                          <span>{formatDate(p.updatedAt)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleEdit(p)}
+                        className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handleDuplicate(p)}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+                      >
+                        <FaCopy /> Duplicate
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p.id)}
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
+                      >
+                        <FaTrash /> Delete
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex gap-2 self-end sm:self-center">
-                  <button
-                    onClick={() => handleEdit(p)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              </motion.div>
             ))}
-            
-            {products.length === 0 && (
-              <p className="text-gray-500 text-center py-8">No products added yet.</p>
-            )}
           </div>
         )}
       </motion.div>

@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FaStar, FaQuoteLeft, FaQuoteRight, FaExclamationTriangle, FaSync } from 'react-icons/fa';
 import { db } from '../firebase';
 import { collection, getDocs, query, where, orderBy, limit, Timestamp } from 'firebase/firestore/lite';
-import { checkFirebaseConfig } from '../utils/env-check';
 import LoadingSpinner from './LoadingSpinner';
 import './ReviewsTicker.css';
 
@@ -76,17 +75,6 @@ const ReviewsTicker = () => {
   const fetchReviews = async () => {
     try {
       console.log("ReviewsTicker: Fetching reviews...");
-      
-      // Check Firebase config first
-      const { configComplete, firebaseConfig } = checkFirebaseConfig();
-      if (!configComplete) {
-        console.error("ReviewsTicker: Firebase configuration is incomplete", 
-          Object.keys(firebaseConfig).filter(key => !firebaseConfig[key]));
-        setError("Firebase configuration is incomplete. Check environment variables.");
-        setDiagnosis(prev => ({ ...prev, configStatus: 'incomplete' }));
-        setLoading(false);
-        return;
-      }
       
       setDiagnosis(prev => ({ ...prev, configStatus: 'complete' }));
       

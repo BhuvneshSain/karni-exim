@@ -22,13 +22,11 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const BestsellerHero = lazy(() => import('./components/BestsellerHero'));
-const HeroDebug = lazy(() => import('./components/HeroDebug'));
 
 // Loading component for suspense fallback
 const PageLoading = () => <LoadingSpinner text="Loading page..." fullScreen />;
 
 const App = () => {
-  const [showHeroDebug, setShowHeroDebug] = useState(false);
   const location = useLocation();
     // Update metadata and SEO for each page
   useEffect(() => {
@@ -56,12 +54,8 @@ const App = () => {
     
   }, [location.pathname]);
   
-  // Check URL parameters for debug flag
+  // Initialize root element styling
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const debugParam = queryParams.get('debug');
-    setShowHeroDebug(debugParam === 'hero');
-    
     // Ensure the content is at least viewport height
     document.documentElement.style.height = '100%';
     document.body.style.minHeight = '100vh';
@@ -69,10 +63,14 @@ const App = () => {
     document.getElementById('root').style.minHeight = '100vh';
     document.getElementById('root').style.display = 'flex';
     document.getElementById('root').style.flexDirection = 'column';
-  }, [location.search]);
-    return (
+  }, []);
+    // Check if current route is admin panel
+  const isAdminRoute = location.pathname === '/karni-admin';
+
+  return (
     <div className="flex flex-col min-h-screen w-full">
-      <Navbar />
+      {/* Only show Navbar and Footer on non-admin routes */}
+      {!isAdminRoute && <Navbar />}
 
       <main className="flex-grow w-full">
         <Suspense fallback={<PageLoading />}>
@@ -90,9 +88,9 @@ const App = () => {
           </Routes>
         </Suspense>
       </main>
-      <Footer />
-      <BackToTop />
-      {showHeroDebug && <Suspense fallback={null}><HeroDebug /></Suspense>}
+      
+      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <BackToTop />}
     </div>
   );
 };
