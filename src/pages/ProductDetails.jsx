@@ -98,13 +98,13 @@ const ProductDetails = () => {
   const images = [product.mainImage, ...(product.otherImages || product.images?.slice(1) || [])].filter(Boolean);
 
   const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
-  `👋 Hello Karni Exim Team,
+  `Hello Karni Exim Team,
 
 I'm interested in the following product:
 
-🛍️ *Product:* ${product.name}
-📂 *Category:* ${product.category}
-🔗 *Product Link:* https://karni-exim-new.netlify.app/product/${product.id}
+*Product:* ${product.name}
+*Category:* ${product.category}
+*Product Link:* https://karniexim.com/product/${product.id}
 
 Please provide a quote or more details.
 
@@ -134,17 +134,39 @@ Thanks & Regards,
         </nav>
 
         <section className="flex flex-col md:grid md:grid-cols-2 gap-8 mt-6">
-          {/* Product Image Gallery - Amazon Style */}
+          {/* Product Image Gallery - Mobile Carousel | Desktop Gallery */}
           <motion.div 
             className="w-full md:sticky md:top-20 md:self-start"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <div className="flex gap-4">
+            {/* MOBILE IMAGE - Single image (Hidden on Desktop) */}
+            <div className="md:hidden w-full">
+              {images.length > 0 ? (
+                <figure className="aspect-square bg-white rounded-lg overflow-hidden shadow-md border border-gray-100">
+                  <img
+                    src={images[0]}
+                    alt={`${product.name}`}
+                    className="w-full h-full object-contain bg-gray-50"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    itemProp="image"
+                  />
+                </figure>
+              ) : (
+                <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                  <p className="text-gray-500">No images available</p>
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP GALLERY WITH THUMBNAIL (Hidden on Mobile) */}
+            <div className="hidden md:flex gap-4">
               {/* Thumbnail Gallery - Left Side */}
               {images.length > 1 && (
-                <div className="flex flex-col gap-2 w-16 sm:w-20">
+                <div className="flex flex-col gap-2 w-20">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
@@ -152,8 +174,8 @@ Thanks & Regards,
                       className={`
                         relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200
                         ${selectedImageIndex === idx 
-                          ? 'border-saffron shadow-md' 
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-saffron shadow-md scale-105' 
+                          : 'border-gray-200 hover:border-gray-300 hover:scale-110'
                         }
                       `}
                     >
@@ -180,7 +202,7 @@ Thanks & Regards,
                       className="w-full h-full object-contain"
                       loading="eager"
                       decoding="async"
-                      fetchpriority="high"
+                      fetchPriority="high"
                       itemProp="image"
                     />
                   </div>
@@ -192,9 +214,9 @@ Thanks & Regards,
               </figure>
             </div>
 
-            {/* Image Counter */}
+            {/* Image Counter - Desktop Only */}
             {images.length > 1 && (
-              <div className="mt-2 text-center text-sm text-gray-500">
+              <div className="hidden md:block mt-2 text-center text-sm text-gray-500">
                 Image {selectedImageIndex + 1} of {images.length}
               </div>
             )}
