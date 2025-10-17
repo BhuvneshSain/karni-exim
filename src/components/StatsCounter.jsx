@@ -95,7 +95,7 @@ const StatsCounter = () => {
               <CounterAnimation end={stats.products} suffix="+" />
             </div>
             <div className="uppercase tracking-wider font-semibold text-charcoal">
-              STAINLESS STEEL PRODUCTS
+              AGRO COMMODITIES DELIVERED
             </div>
           </div>
           

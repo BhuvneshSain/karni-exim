@@ -32,8 +32,8 @@ const Contact = () => {
                 📦 Bulk Orders & B2B Inquiries Welcome
               </p>
               <p className="text-charcoal/80">
-                Manufacturer & exporter with own production facility in Bikaner, Rajasthan. 
-                Specializing in bulk export and import-export solutions worldwide.
+                Bulk exporter of premium Indian agro commodities from Bikaner, Rajasthan. 
+                Specialists in oilseeds, pulses, and spices for global B2B buyers.
               </p>
             </div>
             
@@ -52,7 +52,7 @@ const Contact = () => {
               </p>
               <p className="flex items-start gap-2">
                 <span className="text-saffron text-2xl">🌍</span> 
-                <span><strong className="text-charcoal-dark">Services:</strong> Import-Export, Bulk Manufacturing, B2B Solutions</span>
+                <span><strong className="text-charcoal-dark">Services:</strong> Agro Commodities Export, Bulk Sourcing, B2B Supply Solutions</span>
               </p>
             </div>
             

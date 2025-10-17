@@ -23,7 +23,8 @@ import DOMPurify from 'dompurify';
 
 const ALLOWED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const REQUIRED_IMAGES = 5;
+const TOTAL_IMAGE_SLOTS = 5;
+const MIN_REQUIRED_IMAGES = 1;
 const REQUIRED_IMAGE_WIDTH = 800;
 const REQUIRED_IMAGE_HEIGHT = 800;
 
@@ -32,8 +33,8 @@ const ProductForm = () => {
   const [category, setCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [productImages, setProductImages] = useState(Array(REQUIRED_IMAGES).fill(null));
-  const [previewImages, setPreviewImages] = useState(Array(REQUIRED_IMAGES).fill(null));
+  const [productImages, setProductImages] = useState(Array(TOTAL_IMAGE_SLOTS).fill(null));
+  const [previewImages, setPreviewImages] = useState(Array(TOTAL_IMAGE_SLOTS).fill(null));
   const [isBestSeller, setIsBestSeller] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -44,6 +45,7 @@ const ProductForm = () => {
 
   const { products, loading } = useProducts();
   const categories = Array.from(new Set(products.map(p => p.category)));
+  const totalImageSlots = productImages.length;
 
   // Generate image previews
   useEffect(() => {
@@ -73,6 +75,11 @@ const ProductForm = () => {
       setPreviewImages(newPreviews);
     }
   }, [productImages]);
+
+  // Sanitize plain text inputs to avoid storing unsafe HTML
+  const sanitizeInput = (input) => {
+    return DOMPurify.sanitize(input || '', { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim();
+  };
 
   // Validate image file
   const validateImageFile = (file) => {
@@ -164,10 +171,10 @@ const ProductForm = () => {
       errors.description = "Description is required";
     }
     
-    // Check if all 5 images are uploaded
+    // Ensure the minimum number of images are uploaded
     const uploadedImages = productImages.filter(img => img !== null);
-    if (uploadedImages.length !== REQUIRED_IMAGES && !editProductId) {
-      errors.images = `All ${REQUIRED_IMAGES} product images are required`;
+    if (uploadedImages.length < MIN_REQUIRED_IMAGES && !editProductId) {
+      errors.images = `At least ${MIN_REQUIRED_IMAGES} product image${MIN_REQUIRED_IMAGES === 1 ? '' : 's'} ${MIN_REQUIRED_IMAGES === 1 ? 'is' : 'are'} required.`;
     }
     
     setValidationErrors(errors);
@@ -256,10 +263,10 @@ const ProductForm = () => {
       if (editProductId) {
         const productRef = doc(db, "products", editProductId);
         await updateDoc(productRef, productData);
-        alert("✅ Product updated successfully!");
+        alert("Product updated successfully!");
       } else {
         await addDoc(collection(db, "products"), productData);
-        alert("✅ Product added successfully!");
+        alert("Product added successfully!");
         // Reload page after successful creation
         window.location.reload();
       }
@@ -282,8 +289,8 @@ const ProductForm = () => {
     setCategory(""); 
     setCustomCategory(""); 
     setDescription("");
-    setProductImages(Array(REQUIRED_IMAGES).fill(null));
-    setPreviewImages(Array(REQUIRED_IMAGES).fill(null));
+    setProductImages(Array(TOTAL_IMAGE_SLOTS).fill(null));
+    setPreviewImages(Array(TOTAL_IMAGE_SLOTS).fill(null));
     setIsBestSeller(false);
     setEditProductId(null);
     setValidationErrors({});
@@ -300,10 +307,16 @@ const ProductForm = () => {
     setIsBestSeller(product.isBestSeller || false);
     
     // Load existing images
-    const existingImages = product.images || [];
-    const imageArray = Array(REQUIRED_IMAGES).fill(null);
+    const existingImages = (
+      product.images && product.images.length
+        ? product.images
+        : [product.mainImage, ...(product.otherImages || [])]
+    ).filter(Boolean);
+
+    const dynamicSlots = Math.max(TOTAL_IMAGE_SLOTS, existingImages.length || 0);
+    const imageArray = Array(dynamicSlots).fill(null);
     existingImages.forEach((url, index) => {
-      if (index < REQUIRED_IMAGES) {
+      if (index < dynamicSlots) {
         imageArray[index] = url;
       }
     });
@@ -326,17 +339,17 @@ const ProductForm = () => {
 
   // Handle delete with better error handling
   const handleDelete = async (id) => {
-    if (!window.confirm("⚠️ Are you sure you want to delete this product? This action cannot be undone.")) {
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
       return;
     }
     
     try {
       await deleteDoc(doc(db, "products", id));
-      alert("✅ Product deleted successfully!");
+      alert("Product deleted successfully!");
       window.location.reload();
     } catch (err) {
       console.error("Delete error:", err);
-      alert(`❌ Failed to delete product: ${err.message}`);
+      alert(`Failed to delete product: ${err.message}`);
     }
   };
 
@@ -358,7 +371,7 @@ const ProductForm = () => {
       {/* Form Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-lg shadow-lg">
         <h2 className="text-3xl font-bold flex items-center gap-3">
-          {editProductId ? '✏️ Edit Product' : '➕ Add New Product'}
+          {editProductId ? 'Edit Product' : 'Add New Product'}
         </h2>
         <p className="text-white mt-2 opacity-90">
           {editProductId ? 'Update your product information' : 'Fill in the details to create a new product'}
@@ -502,16 +515,16 @@ const ProductForm = () => {
               <h3 className="text-2xl font-bold text-gray-900">Product Images</h3>
             </div>
             <span className="text-sm font-bold px-4 py-2 bg-blue-600 text-white rounded-full shadow-md">
-              {productImages.filter(img => img !== null).length} / {REQUIRED_IMAGES} uploaded
+              {productImages.filter(img => img !== null).length} / {totalImageSlots} uploaded
             </span>
           </div>
 
           <div className="bg-white p-4 rounded-lg border-2 border-blue-200 mb-4">
             <p className="text-sm text-gray-900 font-medium mb-2">
-              📸 <strong>Upload exactly {REQUIRED_IMAGES} images</strong> for this product in order. Upload them from #1 to #5 sequentially.
+              Note: <strong>Upload up to {totalImageSlots} images</strong> for this product (minimum {MIN_REQUIRED_IMAGES} required). {`Upload them from #1 to #${totalImageSlots} sequentially to control their gallery order.`}
             </p>
             <p className="text-sm text-gray-900 font-medium mb-2">
-              ⭐ <strong>The first image (#1) will be used as the main product image.</strong>
+              Tip: <strong>The first image (#1) will be used as the main product image.</strong>
             </p>
             <p className="text-sm text-gray-700">
               <strong>Accepted formats:</strong> JPG, PNG, WebP | <strong>Max size:</strong> 5MB per image
@@ -527,11 +540,11 @@ const ProductForm = () => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {Array.from({ length: REQUIRED_IMAGES }).map((_, index) => (
+            {productImages.map((_, index) => (
               <div key={index} className="relative">
                 <div className={`border-4 rounded-xl p-3 transition-all duration-200 shadow-md ${
                   previewImages[index] 
-                    ? 'border-green-500 bg-green-50' 
+                    ? 'border-green-500 bg-white'
                     : 'border-dashed border-gray-400 bg-white hover:border-blue-500 hover:shadow-lg'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
@@ -617,7 +630,7 @@ const ProductForm = () => {
                 className="w-6 h-6 text-yellow-500 rounded focus:ring-2 focus:ring-yellow-500"
               />
               <div className="flex-1">
-                <span className="font-bold text-gray-900 text-base">⭐ Mark as Bestseller</span>
+                <span className="font-bold text-gray-900 text-base">Mark as Bestseller</span>
                 <p className="text-sm text-gray-700 mt-1">Product will show a yellow badge on the store</p>
               </div>
             </label>
@@ -716,11 +729,11 @@ const ProductForm = () => {
                       <div className="flex flex-wrap gap-2">
                         {p.isBestSeller && (
                           <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full border border-yellow-300">
-                            ⭐ Bestseller
+                            Bestseller
                           </span>
                         )}
                         <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full border border-green-300">
-                          ✓ Published
+                          Published
                         </span>
                       </div>
                     </div>
@@ -774,7 +787,7 @@ const ProductForm = () => {
                         onClick={() => handleEdit(p)}
                         className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition flex items-center gap-2"
                       >
-                        ✏️ Edit
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDuplicate(p)}

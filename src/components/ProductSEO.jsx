@@ -6,14 +6,14 @@ import PropTypes from 'prop-types';
  * Manages meta tags and structured data for product pages
  * Optimized for search engine crawlers and social media sharing
  */
-const ProductSEO = ({ product, baseUrl = 'https://karni-exim-new.netlify.app' }) => {
+const ProductSEO = ({ product, baseUrl = 'https://karniexim.com' }) => {
   useEffect(() => {
     if (!product) return;
 
     const canonicalUrl = `${baseUrl}/product/${product.id}`;
     
     // Set page title
-    document.title = `${product.name} | Karni Exim - Bulk Export from Bikaner, Rajasthan`;
+    document.title = `${product.name} | Karni Exim - Bulk Agro Commodities Export from Bikaner, Rajasthan`;
     
     // Update or create meta tags
     const updateMetaTag = (property, content, isProperty = false) => {
@@ -31,14 +31,14 @@ const ProductSEO = ({ product, baseUrl = 'https://karni-exim-new.netlify.app' })
     
     // Basic meta tags
     const description = product.description 
-      ? `${product.description.substring(0, 150)}... | Bulk export available. Manufactured in Bikaner, Rajasthan.`
-      : `${product.name} - Available for bulk export from Karni Exim, Bikaner, Rajasthan.`;
+      ? `${product.description.substring(0, 150)}... | Ready for global bulk supply from Bikaner, Rajasthan.`
+      : `${product.name} - Export-ready agro commodity from Karni Exim, Bikaner, Rajasthan.`;
     
     updateMetaTag('description', description);
-    updateMetaTag('keywords', `${product.name}, ${product.category || 'textiles'}, bulk export, wholesale, Bikaner manufacturer, Karni Exim, import export`);
+    updateMetaTag('keywords', `${product.name}, ${product.category || 'agro commodities'}, oilseeds exporter, pulses supplier, spices exporter, Bikaner agro export, Karni Exim, bulk import export`);
     
     // Open Graph tags for Facebook, WhatsApp, LinkedIn
-    updateMetaTag('og:title', `${product.name} | Bulk Export from Bikaner`, true);
+    updateMetaTag('og:title', `${product.name} | Bulk Agro Export from Bikaner`, true);
     updateMetaTag('og:description', description, true);
     updateMetaTag('og:image', product.mainImage || '', true);
     updateMetaTag('og:url', canonicalUrl, true);
@@ -60,7 +60,7 @@ const ProductSEO = ({ product, baseUrl = 'https://karni-exim-new.netlify.app' })
     
     // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image', true);
-    updateMetaTag('twitter:title', `${product.name} | Karni Exim`, true);
+    updateMetaTag('twitter:title', `${product.name} | Karni Exim Agro Exports`, true);
     updateMetaTag('twitter:description', description, true);
     updateMetaTag('twitter:image', product.mainImage || '', true);
     
@@ -178,7 +178,7 @@ const ProductSEO = ({ product, baseUrl = 'https://karni-exim-new.netlify.app' })
     // Cleanup function
     return () => {
       // Reset title
-      document.title = 'Karni Exim | Bulk Textile Manufacturer & Exporter from Bikaner, Rajasthan';
+      document.title = 'Karni Exim | Bulk Agro Commodities Exporter from Bikaner, Rajasthan';
       
       // Remove product-specific schemas
       const productSchemaEl = document.querySelector('script[data-schema="product"]');

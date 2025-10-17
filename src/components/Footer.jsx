@@ -28,7 +28,7 @@ const Footer = () => {
                 />
               </Link>
             </div>
-            <p className="text-sm text-gray-300">Leading exporters of quality textile products from India to global markets since 2015.</p>
+            <p className="text-sm text-gray-300">Leading exporters of premium Indian agro commodities—oilseeds, pulses, and spices—since 2015.</p>
             <p className="text-sm text-gray-400 mt-4">© 2025 Karni Exim. All rights reserved.</p>
           </div>{/* Quick Links */}
           <div className="text-center md:text-left">

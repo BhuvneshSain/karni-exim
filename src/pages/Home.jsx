@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { FaMedal, FaShippingFast, FaHeadset } from 'react-icons/fa';
 import ProductCard from '../components/ProductCard';
 import SocialMediaPreview from '../components/SocialMediaPreview';
+import ProductCollectionSchema from '../components/ProductCollectionSchema';
 
 // Lazy load components that are not needed immediately
 const StatsCounter = lazy(() => import('../components/StatsCounter'));
@@ -23,9 +24,11 @@ const Home = () => {
     <div className="w-full">
       {/* SEO and Social Media Preview */}
       <SocialMediaPreview
-        title="Karni Exim | Bulk Textile Manufacturer & Exporter from Bikaner, Rajasthan"
-        description="Leading manufacturer & bulk exporter of premium textiles from Bikaner, Rajasthan. Own production facility for import-export worldwide. B2B bulk orders welcome. Quality made-in-India products for global markets."
+        title="Karni Exim | Bulk Agro Commodities Exporter from Bikaner, Rajasthan"
+        description="Leading exporter of premium Indian agro commodities, including oilseeds, pulses, and spices. Trusted B2B partner from Bikaner, Rajasthan for global bulk supply."
       />
+      
+      <ProductCollectionSchema products={bestsellers} />
       
       {/* Hero Section */}
       <HeroSection />

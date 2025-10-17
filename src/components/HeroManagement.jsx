@@ -21,7 +21,7 @@ import DOMPurify from 'dompurify';
 
 const ALLOWED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const REQUIRED_WIDTH = 1980;
+const REQUIRED_WIDTH = 1920;
 const REQUIRED_HEIGHT = 1080;
 
 const HeroManagement = () => {
@@ -288,7 +288,7 @@ const HeroManagement = () => {
           {editHeroId ? '✏️ Edit Hero Banner' : '🎯 Add New Hero Banner'}
         </h2>
         <p className="text-white mt-2 opacity-90">
-          {editHeroId ? 'Update your hero banner image' : 'Upload a 1980x1080 image for the homepage carousel'}
+          {editHeroId ? 'Update your hero banner image' : 'Upload a 1920x1080 image for the homepage carousel'}
         </p>
       </div>
 
@@ -330,8 +330,8 @@ const HeroManagement = () => {
             <p className="text-sm text-gray-900 font-medium mb-2">
               📸 <strong>Upload exactly 1 image</strong> for the hero banner.
             </p>
-            <p className="text-sm text-gray-900 font-medium mb-2">
-              📐 <strong>Required Size: {REQUIRED_WIDTH}x{REQUIRED_HEIGHT} pixels (1980x1080)</strong>
+    <p className="text-sm text-gray-900 font-medium mb-2">
+              📐 <strong>Required Size: {REQUIRED_WIDTH}x{REQUIRED_HEIGHT} pixels (1920x1080)</strong>
             </p>
             <p className="text-sm text-gray-900 font-medium mb-2">
               🔗 <strong>This image will link to the Products page (/products) when clicked.</strong>
@@ -384,7 +384,7 @@ const HeroManagement = () => {
                   <div className="w-full aspect-video border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center hover:border-purple-600 hover:bg-purple-50 transition-all">
                     <FaPlus className="text-gray-500 text-6xl mb-4" />
                     <span className="text-lg text-gray-700 font-medium mb-2">Click to upload hero image</span>
-                    <span className="text-sm text-gray-500">1980x1080 pixels required</span>
+                    <span className="text-sm text-gray-500">1920x1080 pixels required</span>
                   </div>
                   <input
                     type="file"
@@ -512,7 +512,7 @@ const HeroManagement = () => {
                     {hero.image && (
                       <div className="mb-3">
                         <p className="text-xs text-gray-500 mb-1 font-medium">Hero Banner Image</p>
-                        <p className="text-sm text-gray-600">Size: 1980x1080 pixels</p>
+                        <p className="text-sm text-gray-600">Size: 1920x1080 pixels</p>
                       </div>
                     )}
 

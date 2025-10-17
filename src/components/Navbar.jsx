@@ -37,7 +37,7 @@ const Navbar = () => {
             <img 
               src={logo} 
               alt="Karni Exim Logo" 
-              className="h-16 mr-2 transform hover:scale-105 transition-transform duration-300" 
+              className="h-24 w-auto mr-4 transform hover:scale-105 transition-transform duration-300" 
             />
           </Link>
         </div>
@@ -59,7 +59,7 @@ const Navbar = () => {
       </div>      {/* Slide-In Mobile Menu */}
       <div className={`fixed top-0 left-0 h-full w-72 bg-charcoal-dark shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:hidden`}>        <div className="flex flex-col pt-20">
           <div className="flex items-center justify-center mb-6 pb-4 border-b border-charcoal-light">
-            <img src={logo} alt="Karni Exim Logo" className="h-16" />
+            <img src={logo} alt="Karni Exim Logo" className="h-20 w-auto" />
           </div>
           <NavLink to="/" className="text-lg px-6 py-3 transition-all text-white hover:text-saffron hover:bg-charcoal-light" onClick={closeMenu}>Home</NavLink>
           <NavLink to="/products" className="text-lg px-6 py-3 transition-all text-white hover:text-saffron hover:bg-charcoal-light" onClick={closeMenu}>Products</NavLink>

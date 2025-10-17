@@ -13,7 +13,7 @@ export const generateSeoTitle = (pageName, suffix = '') => {
   const titleSuffix = suffix ? ` | ${suffix}` : '';
   
   if (pageName === 'Home') {
-    return `${baseName} | Premium Textile Exports from India${titleSuffix}`;
+    return `${baseName} | Bulk Agro Commodities Exporter from India${titleSuffix}`;
   }
   
   return `${pageName} | ${baseName}${titleSuffix}`;
