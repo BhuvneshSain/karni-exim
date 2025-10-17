@@ -77,3 +77,20 @@ export const setCanonicalUrl = (path) => {
   canonical.setAttribute('href', `https://karni-exim-new.netlify.app${path}`);
   document.head.appendChild(canonical);
 };
+
+/**
+ * Safely serialise an object into JSON-LD string content that can be embedded
+ * inside a <script type="application/ld+json"> element without breaking the DOM.
+ * @param {Object} data - Structured data object
+ * @param {number} spacing - Optional pretty print spacing
+ * @returns {string} - Escaped JSON string
+ */
+export const serializeJsonLd = (data, spacing = 2) => {
+  const json = JSON.stringify(data, null, spacing);
+
+  return json
+    .replace(/<\//g, '<\\/') // avoid closing the script tag prematurely
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+    .replace(/&/g, '\\u0026');
+};

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
+import { serializeJsonLd } from "../utils/seoOptimizer";
 
 const DEFAULT_BASE_URL = "https://karniexim.com";
 
@@ -69,9 +70,7 @@ const ProductCollectionSchema = ({ products, baseUrl = DEFAULT_BASE_URL }) => {
     }
 
     try {
-      const schemaJson = JSON.stringify(schema, null, 2);
-      JSON.parse(schemaJson); // sanity check
-      script.textContent = schemaJson;
+      script.textContent = serializeJsonLd(schema);
     } catch (error) {
       console.error("Failed to inject product collection schema", error);
       script.remove();

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { serializeJsonLd } from '../utils/seoOptimizer';
 
 /**
  * ProductSEO Component
@@ -132,7 +133,7 @@ const ProductSEO = ({ product, baseUrl = 'https://karniexim.com' }) => {
       schemaScript.setAttribute('data-schema', 'product');
       document.head.appendChild(schemaScript);
     }
-    schemaScript.textContent = JSON.stringify(productSchema);
+    schemaScript.textContent = serializeJsonLd(productSchema);
     
     // BreadcrumbList schema for navigation
     const breadcrumbSchema = {
@@ -173,7 +174,7 @@ const ProductSEO = ({ product, baseUrl = 'https://karniexim.com' }) => {
       breadcrumbScript.setAttribute('data-schema', 'breadcrumb');
       document.head.appendChild(breadcrumbScript);
     }
-    breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema);
+    breadcrumbScript.textContent = serializeJsonLd(breadcrumbSchema);
     
     // Cleanup function
     return () => {

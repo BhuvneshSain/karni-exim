@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductSEO from '../components/ProductSEO';
-import { generateProductSchema, setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
+import { setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
 import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
 
 const ProductDetails = () => {
@@ -28,15 +28,6 @@ const ProductDetails = () => {
         if (snap.exists()) {
           const productData = { id: snap.id, ...snap.data() };
           setProduct(productData);
-          
-          // Set up product schema for SEO
-          const productSchema = generateProductSchema(productData);
-          
-          // Add product schema to the page
-          const script = document.createElement('script');
-          script.setAttribute('type', 'application/ld+json');
-          script.textContent = JSON.stringify(productSchema);
-          document.head.appendChild(script);
           
           // Set page title and meta description for SEO
           document.title = `${productData.name} | Karni Exim Premium Products`;
