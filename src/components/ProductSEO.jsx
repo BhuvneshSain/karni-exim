@@ -207,3 +207,4 @@ ProductSEO.propTypes = {
 };
 
 export default ProductSEO;
+
