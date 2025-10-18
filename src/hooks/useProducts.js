@@ -1,13 +1,51 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { db } from '../firebase';
 import { collection, getDocs, query, orderBy, limit, startAfter, where } from 'firebase/firestore/lite';
 
 // Cache for storing products data
+const getTimestampValue = (timestamp) => {
+  if (!timestamp) return 0;
+  if (typeof timestamp === 'number') return timestamp;
+  if (timestamp instanceof Date) return timestamp.getTime();
+  if (typeof timestamp === 'string') {
+    const parsed = Date.parse(timestamp);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (typeof timestamp.toMillis === 'function') {
+    return timestamp.toMillis();
+  }
+  if (typeof timestamp.seconds === 'number') {
+    return timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1e6;
+  }
+  return 0;
+};
+
+const sortByDisplayOrder = (products) => {
+  if (!Array.isArray(products)) return [];
+  return [...products].sort((a, b) => {
+    const orderA = typeof a.sortOrder === "number" ? a.sortOrder : Number.MAX_SAFE_INTEGER;
+    const orderB = typeof b.sortOrder === "number" ? b.sortOrder : Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    const createdA = getTimestampValue(a.createdAt);
+    const createdB = getTimestampValue(b.createdAt);
+    return createdB - createdA;
+  });
+};
+
 const productsCache = {
   allProducts: null,
   categories: {},
   bestSellers: null,
   timestamp: null
+};
+
+export const invalidateProductsCache = () => {
+  productsCache.allProducts = null;
+  productsCache.categories = {};
+  productsCache.bestSellers = null;
+  productsCache.timestamp = null;
 };
 
 // Cache validity duration (10 minutes)
@@ -100,6 +138,7 @@ const useProducts = (options = {}) => {
             let filteredData = filterOutOfStock 
               ? cachedData.filter(p => !p.outOfStock) 
               : cachedData;
+            filteredData = sortByDisplayOrder(filteredData);
               
             if (queryLimit && filteredData.length > queryLimit) {
               filteredData = filteredData.slice(0, queryLimit);
@@ -142,6 +181,7 @@ const useProducts = (options = {}) => {
             let filteredData = filterOutOfStock 
               ? cachedData.filter(p => !p.outOfStock) 
               : cachedData;
+            filteredData = sortByDisplayOrder(filteredData);
               
             // Apply limit if needed
             if (queryLimit && filteredData.length > queryLimit) {
@@ -174,20 +214,21 @@ const useProducts = (options = {}) => {
         
         const snapshot = await getDocs(q);
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const sortedItems = sortByDisplayOrder(items);
         
         // Apply out of stock filter if needed
-        const filteredItems = filterOutOfStock ? items.filter(p => !p.outOfStock) : items;
+        const filteredItems = filterOutOfStock ? sortedItems.filter(p => !p.outOfStock) : sortedItems;
         
         // Update cache
         const now = new Date().getTime();
         productsCache.timestamp = now;
         
         if (category) {
-          productsCache.categories[category] = items;
+          productsCache.categories[category] = sortedItems;
         } else if (isBestSeller) {
-          productsCache.bestSellers = items;
+          productsCache.bestSellers = sortedItems;
         } else {
-          productsCache.allProducts = items;
+          productsCache.allProducts = sortedItems;
         }
         
         setProducts(filteredItems);
@@ -208,3 +249,7 @@ const useProducts = (options = {}) => {
 };
 
 export default useProducts;
+
+
+
+

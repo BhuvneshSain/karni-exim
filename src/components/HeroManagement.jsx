@@ -21,8 +21,11 @@ import DOMPurify from 'dompurify';
 
 const ALLOWED_IMAGE_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const REQUIRED_WIDTH = 1920;
-const REQUIRED_HEIGHT = 1080;
+const HERO_DIMENSIONS = {
+  desktop: { width: 1920, height: 700 },
+  mobile: { width: 1080, height: 960 },
+};
+const DEFAULT_DISPLAY_TARGET = 'desktop';
 
 const HeroManagement = () => {
   const [heroImage, setHeroImage] = useState(null);
@@ -30,6 +33,7 @@ const HeroManagement = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [editHeroId, setEditHeroId] = useState(null);
+  const [displayTarget, setDisplayTarget] = useState(DEFAULT_DISPLAY_TARGET);
   const [validationErrors, setValidationErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [heroes, setHeroes] = useState([]);
@@ -76,18 +80,21 @@ const HeroManagement = () => {
     return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] });
   };
 
+  const getDimensionsForTarget = (target) => HERO_DIMENSIONS[target] ?? HERO_DIMENSIONS[DEFAULT_DISPLAY_TARGET];
+
   // Validate image dimensions
-  const validateImageDimensions = (file) => {
+  const validateImageDimensions = (file, target = displayTarget) => {
+    const { width: requiredWidth, height: requiredHeight } = getDimensionsForTarget(target);
     return new Promise((resolve, reject) => {
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
       
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-        if (img.width === REQUIRED_WIDTH && img.height === REQUIRED_HEIGHT) {
+        if (img.width === requiredWidth && img.height === requiredHeight) {
           resolve(true);
         } else {
-          reject(`Image must be exactly ${REQUIRED_WIDTH}x${REQUIRED_HEIGHT} pixels. Your image is ${img.width}x${img.height} pixels.`);
+          reject(`Image must be exactly ${requiredWidth}x${requiredHeight} pixels for the selected banner type. Your image is ${img.width}x${img.height} pixels.`);
         }
       };
       
@@ -101,7 +108,7 @@ const HeroManagement = () => {
   };
 
   // Validate image file
-  const validateImageFile = async (file) => {
+  const validateImageFile = async (file, target = displayTarget) => {
     if (!ALLOWED_IMAGE_FORMATS.includes(file.type)) {
       return `Invalid file format. Only JPG, PNG, and WebP are allowed.`;
     }
@@ -111,7 +118,7 @@ const HeroManagement = () => {
     
     // Validate dimensions
     try {
-      await validateImageDimensions(file);
+      await validateImageDimensions(file, target);
       return null;
     } catch (error) {
       return error;
@@ -135,6 +142,23 @@ const HeroManagement = () => {
       delete newErrors.image;
       return newErrors;
     });
+  };
+
+  const handleDisplayTargetChange = async (target) => {
+    setDisplayTarget(target);
+
+    if (heroImage instanceof File) {
+      const error = await validateImageFile(heroImage, target);
+      if (error) {
+        setValidationErrors(prev => ({ ...prev, image: error }));
+      } else {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.image;
+          return newErrors;
+        });
+      }
+    }
   };
 
   // Remove image
@@ -206,6 +230,7 @@ const HeroManagement = () => {
       const heroData = {
         image: imageUrl,
         link: "/products", // Always links to products page
+        displayTarget,
         updatedAt: Timestamp.now(),
       };
       
@@ -216,10 +241,10 @@ const HeroManagement = () => {
       if (editHeroId) {
         const heroRef = doc(db, "heroes", editHeroId);
         await updateDoc(heroRef, heroData);
-        alert("✅ Hero banner updated successfully!");
+        alert("Hero banner updated successfully!");
       } else {
         await addDoc(collection(db, "heroes"), heroData);
-        alert("✅ Hero banner added successfully!");
+        alert("Hero banner added successfully!");
       }
 
       resetForm();
@@ -238,6 +263,7 @@ const HeroManagement = () => {
     setHeroImage(null);
     setPreviewImage(null);
     setEditHeroId(null);
+    setDisplayTarget(DEFAULT_DISPLAY_TARGET);
     setValidationErrors({});
     setErrorMessage("");
   };
@@ -247,23 +273,24 @@ const HeroManagement = () => {
     setEditHeroId(hero.id);
     setHeroImage(hero.image || null);
     setPreviewImage(hero.image || null);
+    setDisplayTarget(hero.displayTarget || DEFAULT_DISPLAY_TARGET);
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!window.confirm("⚠️ Are you sure you want to delete this hero banner? This action cannot be undone.")) {
+    if (!window.confirm("Are you sure you want to delete this hero banner? This action cannot be undone.")) {
       return;
     }
     
     try {
       await deleteDoc(doc(db, "heroes", id));
-      alert("✅ Hero banner deleted successfully!");
+      alert("Hero banner deleted successfully!");
       fetchHeroes();
     } catch (err) {
       console.error("Delete error:", err);
-      alert(`❌ Failed to delete hero banner: ${err.message}`);
+      alert(`Failed to delete hero banner: ${err.message}`);
     }
   };
 
@@ -280,15 +307,20 @@ const HeroManagement = () => {
     });
   };
 
+  const { width: requiredWidth, height: requiredHeight } = getDimensionsForTarget(displayTarget);
+  const aspectRatio = `${requiredWidth} / ${requiredHeight}`;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Form Header */}
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-t-lg shadow-lg">
         <h2 className="text-3xl font-bold flex items-center gap-3">
-          {editHeroId ? '✏️ Edit Hero Banner' : '🎯 Add New Hero Banner'}
+          {editHeroId ? 'Edit Hero Banner' : 'Add New Hero Banner'}
         </h2>
         <p className="text-white mt-2 opacity-90">
-          {editHeroId ? 'Update your hero banner image' : 'Upload a 1920x1080 image for the homepage carousel'}
+          {editHeroId
+            ? 'Update your hero banner image'
+            : `Upload a ${requiredWidth}x${requiredHeight} ${displayTarget === 'desktop' ? 'desktop' : 'mobile'} hero image for the homepage carousel`}
         </p>
       </div>
 
@@ -321,27 +353,61 @@ const HeroManagement = () => {
             </div>
             {heroImage && (
               <span className="text-sm font-bold px-4 py-2 bg-green-600 text-white rounded-full shadow-md">
-                ✓ Image Uploaded
+                 Image Uploaded
               </span>
             )}
           </div>
 
           <div className="bg-white p-4 rounded-lg border-2 border-purple-200 mb-4">
             <p className="text-sm text-gray-900 font-medium mb-2">
-              📸 <strong>Upload exactly 1 image</strong> for the hero banner.
-            </p>
-    <p className="text-sm text-gray-900 font-medium mb-2">
-              📐 <strong>Required Size: {REQUIRED_WIDTH}x{REQUIRED_HEIGHT} pixels (1920x1080)</strong>
+               <strong>Upload exactly 1 image</strong> for the hero banner.
             </p>
             <p className="text-sm text-gray-900 font-medium mb-2">
-              🔗 <strong>This image will link to the Products page (/products) when clicked.</strong>
+               <strong>Required Size: {requiredWidth}x{requiredHeight} pixels ({displayTarget === 'desktop' ? 'Desktop' : 'Mobile'} banner)</strong>
             </p>
-            <p className="text-sm text-gray-700">
-              <strong>Accepted formats:</strong> JPG, PNG, WebP | <strong>Max size:</strong> 5MB
+            <p className="text-sm text-gray-900 font-medium mb-2">
+               <strong>This image will link to the Products page (/products) when clicked.</strong>
             </p>
-          </div>
+          <p className="text-sm text-gray-700">
+            <strong>Accepted formats:</strong> JPG, PNG, WebP | <strong>Max size:</strong> 5MB
+          </p>
+        </div>
 
-          {validationErrors.image && (
+        <div className="mb-4">
+          <p className="text-sm text-gray-900 font-medium mb-2">Display target</p>
+          <div className="flex flex-wrap gap-4">
+            <label className={`flex items-center gap-3 px-4 py-3 border rounded-lg cursor-pointer transition ${displayTarget === 'desktop' ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-purple-400'}`}>
+              <input
+                type="radio"
+                name="displayTarget"
+                value="desktop"
+                checked={displayTarget === 'desktop'}
+                onChange={() => handleDisplayTargetChange('desktop')}
+                className="accent-purple-600"
+              />
+              <div>
+                <span className="block text-sm font-semibold text-gray-900">Desktop hero</span>
+                <span className="block text-xs text-gray-500">1920x700 px</span>
+              </div>
+            </label>
+            <label className={`flex items-center gap-3 px-4 py-3 border rounded-lg cursor-pointer transition ${displayTarget === 'mobile' ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-purple-400'}`}>
+              <input
+                type="radio"
+                name="displayTarget"
+                value="mobile"
+                checked={displayTarget === 'mobile'}
+                onChange={() => handleDisplayTargetChange('mobile')}
+                className="accent-purple-600"
+              />
+              <div>
+                <span className="block text-sm font-semibold text-gray-900">Mobile hero</span>
+                <span className="block text-xs text-gray-500">1080x960 px</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {validationErrors.image && (
             <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded">
               <p className="text-red-700 text-sm font-medium flex items-center gap-2">
                 <FaTimesCircle /> {validationErrors.image}
@@ -371,7 +437,7 @@ const HeroManagement = () => {
                       Remove
                     </button>
                   </div>
-                  <div className="w-full aspect-video bg-white rounded-lg overflow-hidden border-2 border-gray-200">
+                  <div className="w-full bg-white rounded-lg overflow-hidden border-2 border-gray-200" style={{ aspectRatio }}>
                     <img 
                       src={previewImage} 
                       alt="Hero Banner Preview" 
@@ -381,10 +447,10 @@ const HeroManagement = () => {
                 </div>
               ) : (
                 <label className="cursor-pointer block">
-                  <div className="w-full aspect-video border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center hover:border-purple-600 hover:bg-purple-50 transition-all">
+                  <div className="w-full border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center hover:border-purple-600 hover:bg-purple-50 transition-all" style={{ aspectRatio }}>
                     <FaPlus className="text-gray-500 text-6xl mb-4" />
                     <span className="text-lg text-gray-700 font-medium mb-2">Click to upload hero image</span>
-                    <span className="text-sm text-gray-500">1920x1080 pixels required</span>
+                    <span className="text-sm text-gray-500">{requiredWidth}x{requiredHeight} pixels required</span>
                   </div>
                   <input
                     type="file"
@@ -455,7 +521,7 @@ const HeroManagement = () => {
       >
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            🎯 Active Hero Banners
+            Active Hero Banners
             <span className="text-sm font-normal text-gray-500">({heroes.length})</span>
           </h3>
         </div>
@@ -480,7 +546,12 @@ const HeroManagement = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {heroes.map((hero) => (
+            {heroes.map((hero) => {
+              const heroTarget = hero.displayTarget || DEFAULT_DISPLAY_TARGET;
+              const { width, height } = getDimensionsForTarget(heroTarget);
+              const heroAspectRatio = `${width} / ${height}`;
+
+              return (
               <motion.div 
                 key={hero.id} 
                 className="bg-white p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
@@ -490,7 +561,7 @@ const HeroManagement = () => {
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Hero Image */}
                   {hero.image && (
-                    <div className="w-full lg:w-64 aspect-video flex-shrink-0">
+                    <div className="w-full lg:w-64 flex-shrink-0" style={{ aspectRatio: heroAspectRatio }}>
                       <img 
                         src={hero.image} 
                         alt={hero.title} 
@@ -503,16 +574,18 @@ const HeroManagement = () => {
                   <div className="flex-grow">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
                       <h4 className="font-bold text-xl text-gray-800">Hero Banner</h4>
-                      <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full border border-purple-300">
-                        🔗 Links to Products Page
-                      </span>
+                        <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full border border-purple-300">
+                          Links to Products Page
+                        </span>
                     </div>
 
                     {/* Image Info */}
                     {hero.image && (
                       <div className="mb-3">
                         <p className="text-xs text-gray-500 mb-1 font-medium">Hero Banner Image</p>
-                        <p className="text-sm text-gray-600">Size: 1920x1080 pixels</p>
+                        <p className="text-sm text-gray-600">
+                          Size: {width}x{height} pixels ({heroTarget === 'desktop' ? 'Desktop' : 'Mobile'} banner)
+                        </p>
                       </div>
                     )}
 
@@ -548,7 +621,8 @@ const HeroManagement = () => {
                   </div>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
       </motion.div>

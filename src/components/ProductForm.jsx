@@ -1,23 +1,23 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { db, storage } from '../firebase';
-import {
+import { 
   addDoc,
   collection,
   Timestamp,
   updateDoc,
   doc,
   deleteDoc,
-  getDoc,
+  writeBatch,
+  getDocs,
 } from 'firebase/firestore/lite';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import useProducts from '../hooks/useProducts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { validateImageDimensions, compressImage, needsCompression } from '../utils/imageOptimizer';
 import LoadingSpinner from './LoadingSpinner';
 import Tooltip from './Tooltip';
 import { 
   FaImage, FaInfoCircle, FaCog, FaTrash,
-  FaCopy, FaCheckCircle, FaTimesCircle, FaPlus, FaBoxOpen 
+  FaCopy, FaCheckCircle, FaTimesCircle, FaPlus, FaBoxOpen, FaGripVertical 
 } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
 
@@ -27,6 +27,37 @@ const TOTAL_IMAGE_SLOTS = 5;
 const MIN_REQUIRED_IMAGES = 1;
 const REQUIRED_IMAGE_WIDTH = 800;
 const REQUIRED_IMAGE_HEIGHT = 800;
+const ensureMinimumSlots = (list, minimumLength) => {
+  const output = [...list];
+  while (output.length > minimumLength && (output[output.length - 1] === null || output[output.length - 1] === undefined)) {
+    output.pop();
+  }
+  return output;
+};
+
+const compareProductsByOrder = (a, b) => {
+  const orderA = typeof a.sortOrder === 'number' ? a.sortOrder : Number.MAX_SAFE_INTEGER;
+  const orderB = typeof b.sortOrder === 'number' ? b.sortOrder : Number.MAX_SAFE_INTEGER;
+  if (orderA !== orderB) return orderA - orderB;
+  const createdA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+  const createdB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+  return createdB - createdA;
+};
+
+const reorderProductsById = (list, draggedId, targetId) => {
+  const updated = [...list];
+  const fromIndex = updated.findIndex(product => product.id === draggedId);
+  const toIndex = updated.findIndex(product => product.id === targetId);
+  if (fromIndex === -1 || toIndex === -1) {
+    return list;
+  }
+  const [moved] = updated.splice(fromIndex, 1);
+  updated.splice(toIndex, 0, moved);
+  return updated;
+};
+
+const applySequentialOrder = (list) =>
+  list.map((product, index) => ({ ...product, sortOrder: index }));
 
 const ProductForm = () => {
   const [name, setName] = useState("");
@@ -42,10 +73,34 @@ const ProductForm = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+  const [orderedProducts, setOrderedProducts] = useState([]);
+  const [orderDirty, setOrderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [draggedProductId, setDraggedProductId] = useState(null);
+  const [currentSortOrder, setCurrentSortOrder] = useState(null);
 
-  const { products, loading } = useProducts();
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState(null);
   const categories = Array.from(new Set(products.map(p => p.category)));
   const totalImageSlots = productImages.length;
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoadingProducts(true);
+      setProductsError(null);
+      const snapshot = await getDocs(collection(db, "products"));
+      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProducts(items);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+      setProductsError(err.message || "Failed to load products");
+      setProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  }, []);
+
 
   // Generate image previews
   useEffect(() => {
@@ -75,6 +130,16 @@ const ProductForm = () => {
       setPreviewImages(newPreviews);
     }
   }, [productImages]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const sorted = [...products].sort(compareProductsByOrder);
+    setOrderedProducts(applySequentialOrder(sorted));
+    setOrderDirty(false);
+  }, [products]);
 
   // Sanitize plain text inputs to avoid storing unsafe HTML
   const sanitizeInput = (input) => {
@@ -142,15 +207,77 @@ const ProductForm = () => {
   };
 
   // Handle image removal
-  const handleImageRemove = (index) => {
-    const newImages = [...productImages];
-    newImages[index] = null;
-    setProductImages(newImages);
+  const removeImage = (index) => {
+    setProductImages(prev => {
+      const updated = [...prev];
+      if (index < updated.length) {
+        updated[index] = null;
+      }
+      return ensureMinimumSlots(updated, TOTAL_IMAGE_SLOTS);
+    });
+
+    setPreviewImages(prev => {
+      const updated = [...prev];
+      if (index < updated.length) {
+        updated[index] = null;
+      }
+      return ensureMinimumSlots(updated, TOTAL_IMAGE_SLOTS);
+    });
+
     setValidationErrors(prev => {
       const newErrors = { ...prev };
       delete newErrors[`image_${index}`];
       return newErrors;
     });
+  };
+
+  const handleDragStartProduct = (event, productId) => {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', productId);
+    setDraggedProductId(productId);
+  };
+
+  const handleDragOverProduct = (event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropProduct = (event, targetId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const draggedId = event.dataTransfer.getData('text/plain');
+    if (!draggedId || draggedId === targetId) {
+      setDraggedProductId(null);
+      return;
+    }
+    setOrderedProducts(prev => applySequentialOrder(reorderProductsById(prev, draggedId, targetId)));
+    setOrderDirty(true);
+    setDraggedProductId(null);
+  };
+
+  const handleDragEndProduct = () => {
+    setDraggedProductId(null);
+  };
+
+  const handleSaveOrder = async () => {
+    if (!orderDirty || !orderedProducts.length) return;
+    setSavingOrder(true);
+    try {
+      const batch = writeBatch(db);
+      orderedProducts.forEach((product, index) => {
+        const productRef = doc(db, "products", product.id);
+        batch.update(productRef, { sortOrder: index });
+      });
+      await batch.commit();
+      alert("Product order updated successfully!");
+      setOrderedProducts(prev => applySequentialOrder(prev));
+      setOrderDirty(false);
+    } catch (err) {
+      console.error("Order update error:", err);
+      alert(`Failed to update product order: ${err.message}`);
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   // Validate form
@@ -244,6 +371,9 @@ const ProductForm = () => {
         }
       }
 
+      const defaultSortOrderValue = getNextSortOrderValue();
+      const resolvedSortOrder = currentSortOrder !== null ? currentSortOrder : defaultSortOrderValue;
+
       const productData = {
         name: sanitizedName,
         category: finalCategory,
@@ -253,6 +383,7 @@ const ProductForm = () => {
         otherImages: imageUrls.slice(1) || [],
         isBestSeller,
         badges: [],
+        sortOrder: resolvedSortOrder,
         updatedAt: Timestamp.now(),
       };
       
@@ -268,7 +399,6 @@ const ProductForm = () => {
         await addDoc(collection(db, "products"), productData);
         alert("Product added successfully!");
         // Reload page after successful creation
-        window.location.reload();
       }
 
       // Reset form
@@ -293,6 +423,7 @@ const ProductForm = () => {
     setPreviewImages(Array(TOTAL_IMAGE_SLOTS).fill(null));
     setIsBestSeller(false);
     setEditProductId(null);
+    setCurrentSortOrder(null);
     setValidationErrors({});
     setErrorMessage("");
     setRetryCount(0);
@@ -305,6 +436,14 @@ const ProductForm = () => {
     setCategory(product.category);
     setDescription(product.description);
     setIsBestSeller(product.isBestSeller || false);
+    const currentIndex = orderedProducts.findIndex(item => item.id === product.id);
+    setCurrentSortOrder(
+      typeof product.sortOrder === 'number'
+        ? product.sortOrder
+        : currentIndex >= 0
+          ? currentIndex
+          : null
+    );
     
     // Load existing images
     const existingImages = (
@@ -333,6 +472,7 @@ const ProductForm = () => {
     setDescription(product.description);
     setIsBestSeller(false);
     setEditProductId(null);
+    setCurrentSortOrder(getNextSortOrderValue());
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -644,7 +784,7 @@ const ProductForm = () => {
             onClick={resetForm}
             className="px-8 py-3 bg-white hover:bg-gray-100 text-gray-900 font-bold rounded-lg transition-all shadow-md hover:shadow-lg border-2 border-gray-300"
           >
-            ✕ Cancel
+            Cancel
           </button>
           <button
             type="submit"
@@ -680,13 +820,39 @@ const ProductForm = () => {
           <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <FaBoxOpen className="text-blue-600" />
             Uploaded Products
-            <span className="text-sm font-normal text-gray-500">({products.length})</span>
+            <span className="text-sm font-normal text-gray-500">({orderedProducts.length})</span>
           </h3>
+          {orderedProducts.length > 1 && (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <p className="text-sm text-gray-500 flex items-center gap-2">
+                <FaGripVertical className="text-gray-400" />
+                Drag products to change their storefront order.
+              </p>
+              <button
+                type="button"
+                onClick={handleSaveOrder}
+                disabled={!orderDirty || savingOrder}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all border ${
+                  !orderDirty || savingOrder
+                    ? 'bg-gray-200 text-gray-500 border-gray-200 cursor-not-allowed'
+                    : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700 shadow-md'
+                }`}
+              >
+                {savingOrder ? 'Saving…' : orderDirty ? 'Save Order' : 'Order Saved'}
+              </button>
+            </div>
+          )}
         </div>
 
-        {loading ? (
+        {productsError && (
+          <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <p className="text-sm text-red-700">{productsError}</p>
+          </div>
+        )}
+
+        {loadingProducts ? (
           <LoadingSpinner text="Loading products..." />
-        ) : products.length === 0 ? (
+        ) : orderedProducts.length === 0 ? (
           /* Empty State */
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <div className="w-32 h-32 mx-auto mb-6 bg-blue-50 rounded-full flex items-center justify-center">
@@ -704,14 +870,26 @@ const ProductForm = () => {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {products.map((p) => (
+          <div
+            className="space-y-4"
+            onDragOver={handleDragOverProduct}
+          >
+            {orderedProducts.map((p, index) => (
               <motion.div 
                 key={p.id} 
-                className="bg-white p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                className={`relative bg-white p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing ${draggedProductId === p.id ? 'ring-2 ring-blue-400 shadow-lg' : ''}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                draggable
+                onDragStart={(event) => handleDragStartProduct(event, p.id)}
+                onDragOver={handleDragOverProduct}
+                onDrop={(event) => handleDropProduct(event, p.id)}
+                onDragEnd={handleDragEndProduct}
               >
+                <div className="absolute top-4 left-4 hidden sm:flex items-center gap-2 text-xs font-semibold text-gray-500 pointer-events-none">
+                  <FaGripVertical />
+                  <span>#{index + 1}</span>
+                </div>
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Product Image */}
                   <div className="w-full lg:w-32 h-32 flex-shrink-0">
@@ -814,3 +992,36 @@ const ProductForm = () => {
 };
 
 export default ProductForm;
+  const getNextSortOrderValue = () => {
+    if (!orderedProducts.length) return 0;
+    return orderedProducts.reduce((max, product) => {
+      const value = typeof product.sortOrder === 'number' ? product.sortOrder : max;
+      return value > max ? value : max;
+    }, -1) + 1;
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

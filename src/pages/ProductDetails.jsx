@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore/lite';
 import { db } from '../firebase';
 import { motion } from 'framer-motion';
@@ -7,7 +7,7 @@ import ProductCard from '../components/ProductCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductSEO from '../components/ProductSEO';
 import { setCanonicalUrl, generateWhatsAppShareLink } from '../utils/seoOptimizer';
-import { FaWhatsapp, FaFacebookF, FaEnvelope } from 'react-icons/fa';
+import { FaWhatsapp, FaFacebookF, FaEnvelope, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -16,6 +16,9 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const navigate = useNavigate();
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const carouselRef = useRef(null);
   useEffect(() => {
     // Set canonical URL for SEO
     setCanonicalUrl(`/product/${id}`);
@@ -72,8 +75,11 @@ const ProductDetails = () => {
     
     // Scroll to top when page loads
     window.scrollTo(0, 0);
-  }, [id]);  if (loading) return <LoadingSpinner text="Loading product details..." />;
-    if (!product) return (
+  }, [id]);
+
+  if (loading) return <LoadingSpinner text="Loading product details..." />;
+
+  if (!product) return (
     <div className="max-w-4xl mx-auto px-4 py-16 text-center">
       <h2 className="text-2xl font-bold text-charcoal-dark">Product not found</h2>
       <p className="mt-4 text-gray">The product you're looking for doesn't exist or has been removed.</p>
@@ -107,6 +113,34 @@ Thanks & Regards,
   const whatsappShareLink = generateWhatsAppShareLink(product);
   const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://karni-exim-new.netlify.app/product/${product.id}`)}`;
   const emailShareLink = `mailto:?subject=${encodeURIComponent(`Check out ${product.name} from Karni Exim`)}&body=${encodeURIComponent(`I thought you might be interested in this product from Karni Exim:\n\n${product.name}\n\n${product.description}\n\nCheck it out here: https://karni-exim-new.netlify.app/product/${product.id}`)}`;
+
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        setCatalogLoading(true);
+        const snapshot = await getDocs(collection(db, 'products'));
+        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCatalogProducts(items);
+      } catch (error) {
+        console.error('Error fetching catalogue:', error);
+        setCatalogProducts([]);
+      } finally {
+        setCatalogLoading(false);
+      }
+    };
+    fetchAllProducts();
+  }, []);
+
+  const moreProducts = useMemo(
+    () => catalogProducts.filter(item => item.id !== id),
+    [catalogProducts, id]
+  );
+
+  const handleCarouselScroll = (direction = 1) => {
+    if (!carouselRef.current) return;
+    const scrollAmount = carouselRef.current.clientWidth * 0.8 * direction;
+    carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  };
 
   return (
     <article className="max-w-6xl mx-auto px-4 py-6 sm:py-10" itemScope itemType="https://schema.org/Product">
@@ -329,6 +363,81 @@ Thanks & Regards,
             </div>
           </motion.section>
         )}
+
+        {/* More Products Carousel */}
+        <motion.section 
+          className="mt-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+          aria-labelledby="all-products-heading"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 id="all-products-heading" className="text-2xl font-bold text-charcoal-dark">Browse Our Catalogue</h2>
+              <p className="text-sm text-gray mt-1">Discover more products from Karni Exim.</p>
+            </div>
+            {!catalogLoading && moreProducts.length > 0 && (
+              <div className="hidden md:flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleCarouselScroll(-1)}
+                  className="p-2 rounded-full border border-charcoal/20 text-charcoal hover:border-saffron hover:text-saffron transition-colors"
+                  aria-label="Scroll products left"
+                >
+                  <FaChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCarouselScroll(1)}
+                  className="p-2 rounded-full border border-charcoal/20 text-charcoal hover:border-saffron hover:text-saffron transition-colors"
+                  aria-label="Scroll products right"
+                >
+                  <FaChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {catalogLoading ? (
+            <LoadingSpinner text="Loading catalogue..." priority="low" />
+          ) : (
+            <>
+              <div className="relative">
+                <div
+                  ref={carouselRef}
+                  className="flex gap-4 overflow-x-auto scroll-smooth pb-3 -mx-1 px-1"
+                >
+                  {moreProducts.map(item => (
+                    <div key={item.id} className="min-w-[240px] max-w-[260px] flex-shrink-0">
+                      <ProductCard product={item} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {moreProducts.length > 0 && (
+                <div className="flex md:hidden justify-center gap-4 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => handleCarouselScroll(-1)}
+                    className="px-4 py-2 rounded-full border border-charcoal/20 text-charcoal hover:border-saffron hover:text-saffron transition-colors text-sm font-medium"
+                    aria-label="Scroll products left"
+                  >
+                    <FaChevronLeft className="inline mr-1" /> Prev
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCarouselScroll(1)}
+                    className="px-4 py-2 rounded-full border border-charcoal/20 text-charcoal hover:border-saffron hover:text-saffron transition-colors text-sm font-medium"
+                    aria-label="Scroll products right"
+                  >
+                    Next <FaChevronRight className="inline ml-1" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </motion.section>
       </motion.div>
     </article>
   );

@@ -1,5 +1,5 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiMenu, FiX } from 'react-icons/fi';
 import logo from '../assets/logo.svg';
 
@@ -12,6 +12,7 @@ const linkClass = ({ isActive }) =>
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === '/';
 
@@ -30,14 +31,34 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 16);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navbarClasses = `sticky top-0 z-50 w-full transition-all duration-300 ${
+    isScrolled
+      ? 'bg-charcoal/85 backdrop-blur-md shadow-lg border-b border-white/10'
+      : 'bg-charcoal shadow-md'
+  }`;
+
+  const innerPadding = isScrolled ? 'py-2' : 'py-3';
+  const logoSizeClasses = isScrolled ? 'h-12 md:h-14' : 'h-16 md:h-20';
+
   return (
-    <nav className="sticky top-0 z-50 bg-charcoal shadow-md w-full">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">        <div className="flex items-center">
+    <nav className={navbarClasses}>
+      <div className={`max-w-7xl mx-auto px-4 ${innerPadding} flex justify-between items-center`}>
+        <div className="flex items-center">
           <Link to="/" onClick={closeMenu} className="hover:opacity-80 transition-opacity duration-300">
             <img 
               src={logo} 
               alt="Karni Exim Logo" 
-              className="h-24 w-auto mr-4 transform hover:scale-105 transition-transform duration-300" 
+              className={`w-auto mr-3 transform hover:scale-105 transition-transform duration-300 ${logoSizeClasses}`} 
             />
           </Link>
         </div>
@@ -56,10 +77,12 @@ const Navbar = () => {
             {isOpen ? <FiX /> : <FiMenu />}
           </button>
         </div>
-      </div>      {/* Slide-In Mobile Menu */}
-      <div className={`fixed top-0 left-0 h-full w-72 bg-charcoal-dark shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:hidden`}>        <div className="flex flex-col pt-20">
-          <div className="flex items-center justify-center mb-6 pb-4 border-b border-charcoal-light">
-            <img src={logo} alt="Karni Exim Logo" className="h-20 w-auto" />
+      </div>
+      {/* Slide-In Mobile Menu */}
+      <div className={`fixed top-0 left-0 h-full w-72 bg-charcoal-dark/95 backdrop-blur-lg shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:hidden`}>
+        <div className="flex flex-col pt-20">
+          <div className="flex items-center justify-center mb-6 pb-4 border-b border-charcoal-light/40">
+            <img src={logo} alt="Karni Exim Logo" className="h-16 w-auto" />
           </div>
           <NavLink to="/" className="text-lg px-6 py-3 transition-all text-white hover:text-saffron hover:bg-charcoal-light" onClick={closeMenu}>Home</NavLink>
           <NavLink to="/products" className="text-lg px-6 py-3 transition-all text-white hover:text-saffron hover:bg-charcoal-light" onClick={closeMenu}>Products</NavLink>
