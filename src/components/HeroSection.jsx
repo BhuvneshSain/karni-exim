@@ -36,14 +36,12 @@ const HeroSection = () => {
         if (cachedHeroImages && cacheTimestamp) {
           const age = Date.now() - parseInt(cacheTimestamp);
           if (age < CACHE_DURATION) {
-            console.log('Using cached hero images');
             setHeroImages(JSON.parse(cachedHeroImages));
             return;
           }
         }
         
         // Fetch from Firebase if no cache or expired
-        console.log('Fetching hero images from Firebase...');
         const querySnapshot = await getDocs(collection(db, "heroes"));
         
         const heroes = querySnapshot.docs.map(doc => ({
@@ -51,7 +49,6 @@ const HeroSection = () => {
           ...doc.data()
         }));
         
-        console.log('Hero banners fetched:', heroes.length);
         setHeroImages(heroes);
         
         // Cache the results

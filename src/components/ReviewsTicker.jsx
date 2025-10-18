@@ -74,16 +74,12 @@ const ReviewsTicker = () => {
   // Fetch reviews from Firestore
   const fetchReviews = async () => {
     try {
-      console.log("ReviewsTicker: Fetching reviews...");
-      
       setDiagnosis(prev => ({ ...prev, configStatus: 'complete' }));
       
       // First try to get all reviews to see what's available
       const allReviewsSnapshot = await getDocs(collection(db, "reviews"));
-      console.log(`ReviewsTicker: Found ${allReviewsSnapshot.size} total reviews in database`);
       
       if (allReviewsSnapshot.empty) {
-        console.log("ReviewsTicker: No reviews found in database");
         setReviewsData([]);
         setDiagnosis(prev => ({ ...prev, totalReviews: 0 }));
         setLoading(false);
@@ -124,8 +120,6 @@ const ReviewsTicker = () => {
       });
       
       if (!hasProperReviews) {
-        console.log("ReviewsTicker: No reviews meet filter criteria (approved=true AND isAdmin=true AND createdAt exists)");
-        
         if (reviewsWithBothFlags === 0) {
           setError("No reviews have both required flags (isAdmin=true AND approved=true)");
         } else if (reviewsWithCreatedAt === 0) {
@@ -143,8 +137,6 @@ const ReviewsTicker = () => {
         );
         
         const reviewsSnapshot = await getDocs(reviewsQuery);
-        console.log(`ReviewsTicker: Found ${reviewsSnapshot.size} reviews that match isAdmin=true AND approved=true`);
-        
         if (!reviewsSnapshot.empty) {
           // Now sort them manually since we can't use orderBy if there might be missing createdAt fields
           const reviewsList = reviewsSnapshot.docs.map(doc => ({
@@ -157,12 +149,9 @@ const ReviewsTicker = () => {
             return b.createdAt.seconds - a.createdAt.seconds;
           });
           
-          console.log(`ReviewsTicker: ${reviewsList.length} reviews have valid createdAt field`);
-          
           if (reviewsList.length > 0) {
             setReviewsData(reviewsList);
           } else {
-            console.log("ReviewsTicker: No reviews with valid createdAt field");
             setReviewsData([]);
           }
         } else {
@@ -173,7 +162,6 @@ const ReviewsTicker = () => {
         
         // Fallback to simpler queries
         try {
-          console.log("ReviewsTicker: Trying fallback queries...");
           
           // Just get reviews with isAdmin=true first
           const adminReviewsQuery = query(
@@ -182,7 +170,6 @@ const ReviewsTicker = () => {
           );
           
           const adminReviewsSnapshot = await getDocs(adminReviewsQuery);
-          console.log(`ReviewsTicker: Found ${adminReviewsSnapshot.size} reviews with isAdmin=true`);
           
           if (!adminReviewsSnapshot.empty) {
             const reviewsList = adminReviewsSnapshot.docs
@@ -193,7 +180,6 @@ const ReviewsTicker = () => {
               .filter(review => review.approved === true); // Filter for approved
             
             setReviewsData(reviewsList);
-            console.log(`ReviewsTicker: ${reviewsList.length} reviews match both criteria after filtering`);
           } else {
             setReviewsData([]);
           }
