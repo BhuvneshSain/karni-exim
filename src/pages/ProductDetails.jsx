@@ -19,10 +19,12 @@ const ProductDetails = () => {
   const [catalogProducts, setCatalogProducts] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const carouselRef = useRef(null);
+
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   useEffect(() => {
     // Set canonical URL for SEO
     setCanonicalUrl(`/product/${id}`);
-    
+
     const fetchProduct = async () => {
       setLoading(true);
       try {
@@ -31,19 +33,19 @@ const ProductDetails = () => {
         if (snap.exists()) {
           const productData = { id: snap.id, ...snap.data() };
           setProduct(productData);
-          
+
           // Set page title and meta description for SEO
           document.title = `${productData.name} | Karni Exim Premium Products`;
           const metaDescription = document.querySelector('meta[name="description"]');
           if (metaDescription) {
             metaDescription.setAttribute('content', productData.description.substring(0, 160));
           }
-          
+
           // Update OG tags for social sharing
           const ogTitle = document.querySelector('meta[property="og:title"]');
           const ogDescription = document.querySelector('meta[property="og:description"]');
           const ogImage = document.querySelector('meta[property="og:image"]');
-          
+
           if (ogTitle) ogTitle.setAttribute('content', productData.name);
           if (ogDescription) ogDescription.setAttribute('content', productData.description.substring(0, 160));
           if (ogImage && productData.mainImage) ogImage.setAttribute('content', productData.mainImage);
@@ -54,7 +56,7 @@ const ProductDetails = () => {
             limit(10)
           );
           const querySnapshot = await getDocs(q);
-          
+
           // Filter out the current product and limit to 4 items in JavaScript
           const related = querySnapshot.docs
             .map(doc => ({
@@ -72,47 +74,10 @@ const ProductDetails = () => {
       }
     };
     fetchProduct();
-    
+
     // Scroll to top when page loads
     window.scrollTo(0, 0);
   }, [id]);
-
-  if (loading) return <LoadingSpinner text="Loading product details..." />;
-
-  if (!product) return (
-    <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-      <h2 className="text-2xl font-bold text-charcoal-dark">Product not found</h2>
-      <p className="mt-4 text-gray">The product you're looking for doesn't exist or has been removed.</p>
-      <button
-        onClick={() => navigate('/products')}
-        className="mt-6 bg-charcoal hover:bg-charcoal-dark text-white px-6 py-2 rounded-md inline-flex items-center"
-      >
-        View All Products
-      </button>
-    </div>
-  );
-
-  const images = [product.mainImage, ...(product.otherImages || product.images?.slice(1) || [])].filter(Boolean);
-
-  const whatsappLink = `https://wa.me/918209987858?text=${encodeURIComponent(
-  `Hello Karni Exim Team,
-
-I'm interested in the following product:
-
-*Product:* ${product.name}
-*Category:* ${product.category}
-*Product Link:* https://karniexim.com/product/${product.id}
-
-Please provide a quote or more details.
-
-Thanks & Regards,
-`
-)}`;
-
-  // Social sharing links
-  const whatsappShareLink = generateWhatsAppShareLink(product);
-  const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://karni-exim-new.netlify.app/product/${product.id}`)}`;
-  const emailShareLink = `mailto:?subject=${encodeURIComponent(`Check out ${product.name} from Karni Exim`)}&body=${encodeURIComponent(`I thought you might be interested in this product from Karni Exim:\n\n${product.name}\n\n${product.description}\n\nCheck it out here: https://karni-exim-new.netlify.app/product/${product.id}`)}`;
 
   useEffect(() => {
     const fetchAllProducts = async () => {
@@ -141,6 +106,45 @@ Thanks & Regards,
     const scrollAmount = carouselRef.current.clientWidth * 0.8 * direction;
     carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
+
+  // COMPUTED VALUES (AFTER HOOKS, BEFORE EARLY RETURNS)
+  const images = product ? [product.mainImage, ...(product.otherImages || product.images?.slice(1) || [])].filter(Boolean) : [];
+
+  const whatsappLink = product ? `https://wa.me/918209987858?text=${encodeURIComponent(
+  `Hello Karni Exim Team,
+
+I'm interested in the following product:
+
+*Product:* ${product.name}
+*Category:* ${product.category}
+*Product Link:* https://karniexim.com/product/${product.id}
+
+Please provide a quote or more details.
+
+Thanks & Regards,
+`
+)}` : '';
+
+  // Social sharing links
+  const whatsappShareLink = product ? generateWhatsAppShareLink(product) : '';
+  const facebookShareLink = product ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://karni-exim-new.netlify.app/product/${product.id}`)}` : '';
+  const emailShareLink = product ? `mailto:?subject=${encodeURIComponent(`Check out ${product.name} from Karni Exim`)}&body=${encodeURIComponent(`I thought you might be interested in this product from Karni Exim:\n\n${product.name}\n\n${product.description}\n\nCheck it out here: https://karni-exim-new.netlify.app/product/${product.id}`)}` : '';
+
+  // EARLY RETURNS AFTER ALL HOOKS
+  if (loading) return <LoadingSpinner text="Loading product details..." />;
+
+  if (!product) return (
+    <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+      <h2 className="text-2xl font-bold text-charcoal-dark">Product not found</h2>
+      <p className="mt-4 text-gray">The product you're looking for doesn't exist or has been removed.</p>
+      <button
+        onClick={() => navigate('/products')}
+        className="mt-6 bg-charcoal hover:bg-charcoal-dark text-white px-6 py-2 rounded-md inline-flex items-center"
+      >
+        View All Products
+      </button>
+    </div>
+  );
 
   return (
     <article className="max-w-6xl mx-auto px-4 py-6 sm:py-10" itemScope itemType="https://schema.org/Product">
