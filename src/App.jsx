@@ -64,15 +64,15 @@ const App = () => {
     document.getElementById('root').style.display = 'flex';
     document.getElementById('root').style.flexDirection = 'column';
   }, []);
-    // Check if current route is admin panel
-  const isAdminRoute = location.pathname === '/karni-admin';
+  // Check if current route is admin panel
+  const isAdminRoute = location.pathname.startsWith('/karni-admin');
 
   return (
     <div className="flex flex-col min-h-screen w-full">
       {/* Only show Navbar and Footer on non-admin routes */}
       {!isAdminRoute && <Navbar />}
 
-      <main className="flex-grow w-full">
+      <main className="flex-grow w-full pt-16 md:pt-20">
         <Suspense fallback={<PageLoading />}>
           <Routes>
             <Route path="/" element={<Home />} />
